@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الإيصالات - FAST NET</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    direction: rtl;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+.controls {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+.controls input, .controls select {
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 5px 0;
+    flex: 1;
+    min-width: 150px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: right;
+}
+th {
+    background: #007bff;
+}
+.status-label {
+    padding: 3px 7px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 12px;
+    display: inline-block;
+}
+.status-full { background: #28a745; }
+.status-partial { background: #ffc107; color: #000; }
+.status-none { background: #dc3545; }
+.print-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: #007bff;
+    color: #fff;
+    border-radius: 4px;
+}
+.print-btn:hover { background: #0056b3; }
+td, th { vertical-align: middle; }
+.back-btn {
+    padding: 8px 12px; 
+    font-size: 14px; 
+    margin-bottom: 15px; 
+    border:none; 
+    border-radius:5px; 
+    background:#007bff; 
+    color:#fff; 
+    cursor:pointer;
+}
+.back-btn:hover { background:#0056b3; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- زر الرجوع -->
+    <button class="back-btn" onclick="goHome()">← الرجوع إلى الصفحة الرئيسية</button>
+
+    <h1>قائمة الإيصالات</h1>
+
+    <div class="controls">
+        <input type="text" id="search" placeholder="بحث بالاسم...">
+        <select id="filterStatus">
+            <option value="">الكل</option>
+            <option value="full">مدفوع كليًا</option>
+            <option value="partial">مدفوع جزئيًا</option>
+        </select>
+    </div>
+
+    <table>
+    <thead>
+    <tr>
+        <th>رقم الإيصال</th>
+        <th>المشترك</th>
+        <th>السعر</th>
+        <th>المدفوع</th>
+        <th>المتبقي</th>
+        <th>الشهر</th>
+        <th>الحالة</th>
+        <th>تاريخ الدفع</th>
+        <th>طباعة</th>
+    </tr>
+    </thead>
+    <tbody id="receiptsTableBody">
+    <!-- سيتم تعبئتها بالجافاسكربت -->
+    </tbody>
+    </table>
+</div>
+
+<script>
+// وظيفة الرجوع للصفحة الرئيسية
+function goHome() {
+    // استبدل "index.html" برابط الصفحة الرئيسية الفعلي
+    window.location.href = "index.html";
+}
+
+// تحميل البيانات
+let receipts = JSON.parse(localStorage.getItem("receipts")) || [];
+let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
+
+function renderTable() {
+    const tableBody = document.getElementById("receiptsTableBody");
+    const search = document.getElementById("search").value.toLowerCase();
+    const statusFilter = document.getElementById("filterStatus").value;
+
+    tableBody.innerHTML = "";
+
+    if (receipts.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">لا توجد إيصالات</td></tr>`;
+        return;
+    }
+
+    // ربط الإيصالات بالمشتركين
+    let rows = receipts.map(r => {
+        const sub = subscribers.find(s => Number(s.id) === Number(r.subscriberId));
+        let total = sub ? sub.price : 0;
+        let remaining = (r.remaining !== undefined) ? r.remaining : total;
+        return {
+            id: r.id,
+            name: sub ? sub.name : "غير معروف",
+            address: sub ? sub.address : "غير محدد",
+            total: total,
+            amount: r.amount || 0,
+            remaining: remaining,
+            month: r.month || "-",
+            date: r.date || "-",
+        };
+    });
+
+    // فلترة حسب البحث والحالة
+    let filtered = rows.filter(r => {
+        const matchesSearch = r.name.toLowerCase().includes(search);
+        let matchesStatus = true;
+        if (statusFilter === "full") matchesStatus = r.remaining === 0;
+        if (statusFilter === "partial") matchesStatus = r.remaining > 0 && r.remaining < r.total;
+        return matchesSearch && matchesStatus;
+    });
+
+    if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">لا توجد نتائج</td></tr>`;
+        return;
+    }
+
+    // عرض الصفوف
+    filtered.forEach(r => {
+        let statusClass = "status-none";
+        let statusText = "غير مدفوع";
+
+        if (r.remaining === 0) {
+            statusClass = "status-full";
+            statusText = "مدفوع كليًا";
+        } else if (r.remaining > 0 && r.remaining < r.total) {
+            statusClass = "status-partial";
+            statusText = "مدفوع جزئيًا";
+        }
+
+        tableBody.innerHTML += `
+        <tr>
+            <td>${r.id}</td>
+            <td>${r.name}</td>
+            <td>$${r.total}</td>
+            <td>$${r.amount}</td>
+            <td>$${r.remaining}</td>
+            <td>${r.month}</td>
+            <td><span class="status-label ${statusClass}">${statusText}</span></td>
+            <td>${r.date}</td>
+            <td><button class="print-btn" onclick="printReceipt(${r.id})">طباعة</button></td>
+        </tr>
+        `;
+    });
+}
+
+// طباعة الإيصال
+function printReceipt(id) {
+    const r = receipts.find(x => x.id == id);
+    if (!r) return alert("الإيصال غير موجود");
+
+    const sub = subscribers.find(s => Number(s.id) === Number(r.subscriberId));
+    const total = sub ? sub.price : 0;
+    const remaining = (r.remaining !== undefined) ? r.remaining : total;
+
+    if (remaining === total) return alert("لا يمكن طباعة إيصال غير مدفوع");
+
+    const status = remaining === 0 ? "مدفوع كليًا" : "مدفوع جزئيًا";
+
+    const win = window.open("", "PrintReceipt", "width=220,height=500");
+
+    win.document.write(`
+    <div style="font-family:Arial, sans-serif; direction:rtl; width:200px; padding:5px; text-align:right; font-size:12px;">
+        <h3 style="text-align:center; margin:0;">FAST NET</h3>
+        <p style="text-align:center; margin:2px 0; font-size:12px;">71346411 / 71338640</p>
+        <hr>
+        <table style="width:100%; border-collapse:collapse; font-size:12px; direction:rtl;">
+            <tr><td style="font-weight:bold;">رقم الإيصال:</td><td>${r.id}</td></tr>
+            <tr><td style="font-weight:bold;">المشترك:</td><td>${sub ? sub.name : "غير معروف"}</td></tr>
+            <tr><td style="font-weight:bold;">العنوان:</td><td>${sub ? sub.address : "غير محدد"}</td></tr>
+            <tr><td style="font-weight:bold;">سعر الاشتراك:</td><td>$${total}</td></tr>
+            <tr><td style="font-weight:bold;">المدفوع:</td><td>$${r.amount}</td></tr>
+            <tr><td style="font-weight:bold;">المتبقي:</td><td>$${remaining}</td></tr>
+            <tr><td style="font-weight:bold;">الشهر:</td><td>${r.month}</td></tr>
+            <tr><td style="font-weight:bold;">حالة الدفع:</td><td>${status}</td></tr>
+            <tr><td style="font-weight:bold;">تاريخ الدفع:</td><td>${r.date}</td></tr>
+        </table>
+        <hr>
+        <p style="text-align:center; font-weight:bold; font-size:12px;">شكراً لاستخدامكم FAST NET</p>
+    </div>
+    `);
+
+    win.print();
+}
+
+// تشغيل الصفحة عند التحميل
+document.addEventListener("DOMContentLoaded", renderTable);
+
+// تحديث الجدول عند البحث أو الفلتر
+document.getElementById("search").addEventListener("input", renderTable);
+document.getElementById("filterStatus").addEventListener("change", renderTable);
+</script>
+
+</body>
+</html>
