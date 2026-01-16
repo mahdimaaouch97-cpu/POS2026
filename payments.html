@@ -63,36 +63,21 @@ button {
     margin-bottom:10px;
 }
 
-/* ====== ألوان الحالة (مثل POSNEW) ====== */
-.status-paid {
-    background-color:#388e3c;
-    color:white;
-    font-weight:bold;
-    padding:5px 8px;
-    border-radius:5px;
-    display:inline-block;
-    min-width:110px;
-}
-
-.status-partial {
-    background-color:#f57c00;
-    color:white;
-    font-weight:bold;
-    padding:5px 8px;
-    border-radius:5px;
-    display:inline-block;
-    min-width:110px;
-}
-
+/* ====== ألوان الحالة (مطابقة POSNEW) ====== */
+.status-paid,
+.status-partial,
 .status-unpaid {
-    background-color:#c62828;
-    color:white;
-    font-weight:bold;
-    padding:5px 8px;
-    border-radius:5px;
     display:inline-block;
     min-width:110px;
+    padding:5px 8px;
+    border-radius:5px;
+    color:white;
+    font-weight:bold;
 }
+
+.status-paid { background-color:#388e3c; }
+.status-partial { background-color:#f57c00; }
+.status-unpaid { background-color:#c62828; }
 </style>
 </head>
 
@@ -133,7 +118,6 @@ button {
 <script>
 // ====== تحميل البيانات ======
 let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
-let receipts = JSON.parse(localStorage.getItem("receipts")) || [];
 
 subscribers = subscribers.map((sub, index) => ({
     id: sub.id ?? index + 1,
@@ -169,7 +153,7 @@ function renderTable(){
     });
 
     if(filtered.length === 0){
-        tableBody.innerHTML = `<tr><td colspan="12">لا يوجد مشتركين مطابقين.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="12">لا يوجد مشتركين.</td></tr>`;
         return;
     }
 
@@ -183,71 +167,4 @@ function renderTable(){
                 ? '<span class="status-partial">مدفوع جزئيًا</span>'
                 : '<span class="status-unpaid">غير مدفوع</span>';
 
-        tableBody.innerHTML += `
-        <tr>
-            <td>${sub.id}</td>
-            <td>${sub.name}</td>
-            <td>${sub.phone}</td>
-            <td>${sub.address}</td>
-            <td>$${sub.price}</td>
-            <td>$${paidAmount}</td>
-            <td>$${sub.remaining}</td>
-            <td>${statusHtml}</td>
-            <td>
-                <select id="month-${sub.id}">
-                    ${[...Array(12)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
-                </select>
-            </td>
-            <td>
-                <input type="number" id="pay-${sub.id}" min="0.01" max="${sub.remaining}" step="0.01" ${sub.remaining===0?"disabled":""}>
-                <button class="pay-btn" onclick="pay(${sub.id})" ${sub.remaining===0?"disabled":""}>دفع</button>
-            </td>
-            <td><button class="print-btn" onclick="printReceipt(${sub.id})">طباعة</button></td>
-            <td><button class="wa-btn" onclick="sendWhatsApp(${sub.id})">واتساب</button></td>
-        </tr>`;
-    });
-}
-
-// ====== الدفع ======
-function pay(id){
-    const sub = subscribers.find(s => s.id === id);
-    const amount = parseFloat(document.getElementById(`pay-${id}`).value);
-    const month = document.getElementById(`month-${id}`).value;
-
-    if(isNaN(amount) || amount <= 0 || amount > sub.remaining){
-        alert("الرجاء إدخال مبلغ صالح");
-        return;
-    }
-
-    sub.remaining = +(sub.remaining - amount).toFixed(2);
-    sub.payments.push({ amount, month, date: new Date().toLocaleDateString() });
-
-    localStorage.setItem("subscribers", JSON.stringify(subscribers));
-    renderTable();
-}
-
-function sendWhatsApp(id){
-    const sub = subscribers.find(s => s.id === id);
-    const last = sub.payments[sub.payments.length - 1];
-    if(!last) return;
-
-    const msg = `📩 إشعار دفع FAST NET
-👤 الاسم: ${sub.name}
-📍 العنوان: ${sub.address}
-💰 المدفوع: $${last.amount}
-💵 المتبقي: $${sub.remaining}
-🗓️ الشهر: ${last.month}
-📅 التاريخ: ${last.date}`;
-
-    window.open(`https://wa.me/${sub.phone}?text=${encodeURIComponent(msg)}`,"_blank");
-}
-
-function printReceipt(){
-    alert("الطباعة موجودة كما في نسختك الأصلية");
-}
-
-renderTable();
-</script>
-
-</body>
-</html>
+        tableBody.innerHTML +
