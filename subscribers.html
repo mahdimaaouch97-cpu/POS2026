@@ -101,10 +101,6 @@ localStorage.setItem("subscribers", JSON.stringify(subscribers));
 const tableBody = document.querySelector("#subscribersTable tbody");
 const addBtn = document.getElementById("addBtn");
 
-// ====== دوال التنقل ======
-function goHome(){ window.location.href="index.html"; }
-function goPayments(){ window.location.href="payments.html"; }
-
 // ====== عرض الجدول ======
 function renderTable(){
     const searchValue = document.getElementById("search").value.toLowerCase();
@@ -143,7 +139,7 @@ function renderTable(){
             <td>$${paidAmount}</td>
             <td>$${remaining}</td>
             <td class="${statusClass}">${statusText}</td>
-            <td>${remaining>0?`<button class="reminder-btn" onclick="sendReminder(${sub.id})">تذكير واتساب</button>`:""}</td>
+            <td>${remaining > 0 ? `<button class="reminder-btn" onclick="sendReminder(${sub.id})">تذكير واتساب</button>` : "✔"}</td>
             <td><button class="delete-btn" onclick="deleteSubscriber(${sub.id})">حذف</button></td>
         `;
         tableBody.appendChild(tr);
@@ -178,14 +174,34 @@ function deleteAllSubscribers(){if(!confirm("هل أنت متأكد من حذف 
 
 // ====== واتساب ======
 function sendReminder(id){
-    const sub=subscribers.find(s=>s.id===id);
-    if(!sub.payments.length) return alert("لا توجد دفعات لهذا المشترك");
-    const paid=sub.payments.reduce((sum,p)=>sum+Number(p.amount),0).toFixed(2);
-    const remaining=(sub.price-paid).toFixed(2);
-    const today=new Date().toLocaleDateString();
-    const statusText=remaining<sub.price?'مدفوع جزئيًا':'غير مدفوع';
-    const msg=`عزيزي المشترك/ة، نذكركم بتسديد اشتراك الإنترنت.\n👤 الاسم: ${sub.name}\n💵 المبلغ المتبقي: $${remaining}\n📅 التاريخ: ${today}\n📌 الحالة: ${statusText}\n\nشكراً لاستخدامكم خدماتنا! 🚀`;
-    window.open(`https://wa.me/${sub.phone}?text=${encodeURIComponent(msg)}`,"_blank");
+    const sub = subscribers.find(s => s.id === id);
+    if(!sub) return;
+
+    const paid = sub.payments.reduce((sum,p)=>sum+Number(p.amount),0);
+    const remaining = (sub.price - paid).toFixed(2);
+    const today = new Date().toLocaleDateString();
+
+    let statusText = "غير مدفوع";
+    if(remaining == 0) statusText = "مدفوع كليًا";
+    else if(remaining < sub.price) statusText = "مدفوع جزئيًا";
+
+    const msg =
+`عزيزي المشترك/ة،
+نذكركم بتسديد اشتراك الإنترنت 📡
+
+👤 الاسم: ${sub.name}
+💵 قيمة الاشتراك: $${sub.price}
+💰 المدفوع: $${paid.toFixed(2)}
+❗ المتبقي: $${remaining}
+📅 التاريخ: ${today}
+📌 الحالة: ${statusText}
+
+شاكرين تعاونكم 🌟`;
+
+    window.open(
+        `https://wa.me/${sub.phone}?text=${encodeURIComponent(msg)}`,
+        "_blank"
+    );
 }
 
 // ====== استيراد CSV ======
