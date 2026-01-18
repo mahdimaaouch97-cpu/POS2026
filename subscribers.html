@@ -168,12 +168,27 @@ window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscrib
 window.sendWA = id => {
   const s = subscribers.find(x => x.fid == id);
   if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone;
+
   const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
   const rem = s.price - paid;
-  const msg = `الاسم: ${s.name}\nالمتبقي: $${rem}`;
+
+  let msg = "";
+
+  if(rem === 0){
+    alert(`${s.name} دفع كامل المبلغ بالفعل!`);
+    return;
+  } else if(rem < s.price){
+    // مدفوع جزئيًا
+    msg = `مرحبًا ${s.name}،\nلقد تم دفع جزء من اشتراكك.\nالمبلغ المتبقي: $${rem}.\nنرجو تسويته في أقرب وقت. شكرًا لك.`;
+  } else {
+    // غير مدفوع
+    msg = `مرحبًا ${s.name}،\nنود تذكيرك بأن مبلغ اشتراكك كاملًا $${s.price} لم يتم دفعه بعد.\nيرجى الدفع في أقرب وقت ممكن. شكرًا لك.`;
+  }
+
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
 </script>
 
 </body>
 </html>
+
