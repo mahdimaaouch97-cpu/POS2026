@@ -26,6 +26,7 @@ th { background:#007bff; color:#fff;}
 <body>
 
 <div class="container">
+<!-- استبدل الرابط أدناه بالرابط الكامل لصفحتك الرئيسية على GitHub Pages -->
 <button class="back-btn" onclick="goHome()">← الرجوع إلى الصفحة الرئيسية</button>
 <h1>قائمة الإيصالات</h1>
 
@@ -190,14 +191,12 @@ function renderTable() {
 searchInput.addEventListener("input", renderTable);
 filterSelect.addEventListener("change", renderTable);
 
-// زر الرجوع يعمل دائمًا
+// زر الرجوع مضمون على GitHub Pages أو محلي
 function goHome(){
-    const homePage = "index.html"; // تأكد أن هذا هو اسم الصفحة الرئيسية
-    fetch(homePage, {method:"HEAD"})
-        .then(res => { if(res.ok) window.location.href = homePage;
-            else alert("صفحة الرئيسية غير موجودة. تأكد من الاسم أو المسار."); })
-        .catch(()=>alert("لا يمكن الوصول للصفحة الرئيسية."));
+    // استبدل الرابط أدناه بالرابط الفعلي لصفحتك الرئيسية على GitHub Pages
+    window.location.href = "https://username.github.io/POS2026/index.html";
 }
 </script>
+
 </body>
 </html>
