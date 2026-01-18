@@ -3,71 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة المشتركين - FAST NET</title>
+<title>إدارة المشتركين - POSNEW</title>
+
 <style>
 body { font-family: Arial, sans-serif; padding:20px; background:#f5f5f5; direction:rtl; }
 h1 { text-align:center; margin-bottom:15px; color:#333; }
 .top-buttons { text-align:center; margin-bottom:20px; }
 .top-buttons button { margin:5px; padding:10px 16px; font-weight:bold; border-radius:5px; border:none; cursor:pointer; }
 .home-btn { background-color:#007bff; color:white; }
-.search-filter { max-width:400px; margin:0 auto 15px auto; display:flex; gap:10px; }
-.search-filter input, .search-filter select { flex:1; padding:8px; }
-.add-form { max-width:500px; margin:0 auto 15px auto; background:#fff; padding:15px; border-radius:8px; }
+.search-filter { max-width:400px; margin:0 auto 15px; display:flex; gap:10px; }
+.search-filter input, select { flex:1; padding:8px; }
+.add-form { max-width:500px; margin:0 auto 15px; background:#fff; padding:15px; border-radius:8px; }
 .add-form input { width:100%; padding:8px; margin-bottom:10px; }
 .add-form button { width:100%; padding:10px; background:#007bff; color:white; border:none; }
-table { width:100%; border-collapse: collapse; background:white; }
+table { width:100%; border-collapse:collapse; background:white; }
 th, td { padding:10px; border:1px solid #ddd; text-align:center; }
 th { background:#007bff; color:white; }
-.delete-btn { background:#dc3545; color:white; border:none; padding:5px 8px; }
-.reminder-btn { background:#25D366; color:white; border:none; padding:5px 8px; }
+.delete-btn { background:#dc3545; color:white; padding:5px 8px; border:none; }
+.reminder-btn { background:#25D366; color:white; padding:5px 8px; border:none; }
 .status-full { background:#388e3c; color:white; }
 .status-partial { background:#f57c00; color:white; }
 .status-unpaid { background:#c62828; color:white; }
 </style>
 </head>
+
 <body>
 
 <h1>إدارة المشتركين</h1>
 
 <div class="top-buttons">
-<button class="home-btn" onclick="location.href='index.html'">العودة للرئيسية</button>
-<button class="home-btn" onclick="location.href='payments.html'">الدفع</button>
+  <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
+  <button class="home-btn" onclick="location.href='payments.html'">الدفع</button>
 </div>
 
 <div class="search-filter">
-<input type="text" id="search" placeholder="بحث..." onkeyup="renderTable()">
-<select id="filterStatus" onchange="renderTable()">
-<option value="all">الكل</option>
-<option value="full">مدفوع كليًا</option>
-<option value="partial">مدفوع جزئيًا</option>
-<option value="unpaid">غير مدفوع</option>
-</select>
+  <input id="search" placeholder="بحث..." onkeyup="renderTable()">
+  <select id="filterStatus" onchange="renderTable()">
+    <option value="all">الكل</option>
+    <option value="full">مدفوع كليًا</option>
+    <option value="partial">مدفوع جزئيًا</option>
+    <option value="unpaid">غير مدفوع</option>
+  </select>
 </div>
 
 <div class="add-form">
-<input id="name" placeholder="اسم المشترك">
-<input id="phone" placeholder="الهاتف">
-<input id="address" placeholder="العنوان">
-<input id="price" type="number" placeholder="سعر الاشتراك">
-<button onclick="addSubscriber()">إضافة مشترك</button>
+  <input id="name" placeholder="اسم المشترك">
+  <input id="phone" placeholder="رقم الهاتف">
+  <input id="address" placeholder="العنوان">
+  <input id="price" type="number" placeholder="سعر الاشتراك">
+  <button id="addBtn">إضافة مشترك</button>
 </div>
 
 <table>
 <thead>
 <tr>
 <th>#</th><th>الاسم</th><th>الهاتف</th><th>العنوان</th>
-<th>السعر</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th><th>تذكير</th><th>حذف</th>
+<th>السعر</th><th>المدفوع</th><th>المتبقي</th>
+<th>الحالة</th><th>واتساب</th><th>حذف</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
 
-<!-- 🔥 Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* 🔥 Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
   authDomain: "pos2026-310b7.firebaseapp.com",
@@ -80,89 +82,80 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-let subscribers = [];
 
+let subscribers = [];
 const tableBody = document.getElementById("tableBody");
 
-// جلب المشتركين
-onValue(ref(db,"subscribers"), snap=>{
+/* تحميل البيانات */
+onValue(ref(db,"subscribers"), snap => {
   const data = snap.val() || {};
-  subscribers = Object.entries(data).map(([id,v])=>({id,...v}));
+  subscribers = Object.entries(data).map(([id,sub],i)=>({
+    fid:id,
+    id:i+1,
+    ...sub,
+    payments: sub.payments || []
+  }));
   renderTable();
 });
 
-window.addSubscriber = function(){
-  const name=nameInput.value.trim();
-  const phone=phoneInput.value.trim();
-  const address=addressInput.value.trim();
-  const price=Number(priceInput.value);
-  if(!name||!phone||!price) return alert("بيانات غير صحيحة");
-
-  push(ref(db,"subscribers"),{
-    name,phone,address,price,
-    payments:{}
-  });
-
-  nameInput.value=phoneInput.value=addressInput.value=priceInput.value="";
-};
-
-window.deleteSubscriber = function(id){
-  if(confirm("حذف المشترك؟")){
-    remove(ref(db,"subscribers/"+id));
-  }
-};
-
+/* عرض الجدول */
 window.renderTable = function(){
-  const search=searchInput.value.toLowerCase();
-  const filter=filterStatus.value;
+  const s = search.value.toLowerCase();
+  const f = filterStatus.value;
   tableBody.innerHTML="";
 
-  subscribers.filter(s=>{
-    const paid=Object.values(s.payments||{}).reduce((a,p)=>a+Number(p.amount||0),0);
-    const remaining=s.price-paid;
-    let status="unpaid";
-    if(remaining==0)status="full";
-    else if(remaining<s.price)status="partial";
-    return (filter=="all"||filter==status) &&
-           (s.name.toLowerCase().includes(search)||s.phone.includes(search));
-  }).forEach((s,i)=>{
-    const paid=Object.values(s.payments||{}).reduce((a,p)=>a+Number(p.amount||0),0);
-    const remaining=s.price-paid;
-    let st="غير مدفوع",cls="status-unpaid";
-    if(remaining==0){st="مدفوع كليًا";cls="status-full";}
-    else if(remaining<s.price){st="مدفوع جزئيًا";cls="status-partial";}
+  subscribers.filter(sub=>{
+    const paid=sub.payments.reduce((a,p)=>a+Number(p.amount),0);
+    const rem=sub.price-paid;
+    let st="unpaid"; if(rem==0)st="full"; else if(rem<sub.price)st="partial";
+    return (f=="all"||f==st) &&
+      (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
+  }).forEach(sub=>{
+    const paid=sub.payments.reduce((a,p)=>a+Number(p.amount),0);
+    const rem=sub.price-paid;
+    let txt="غير مدفوع",cls="status-unpaid";
+    if(rem==0){txt="مدفوع كليًا";cls="status-full";}
+    else if(rem<sub.price){txt="جزئي";cls="status-partial";}
 
     tableBody.innerHTML+=`
 <tr>
-<td>${i+1}</td>
-<td>${s.name}</td>
-<td>${s.phone}</td>
-<td>${s.address}</td>
-<td>$${s.price}</td>
+<td>${sub.id}</td>
+<td>${sub.name}</td>
+<td>${sub.phone}</td>
+<td>${sub.address}</td>
+<td>$${sub.price}</td>
 <td>$${paid}</td>
-<td>$${remaining}</td>
-<td class="${cls}">${st}</td>
-<td>${remaining>0?`<button class="reminder-btn" onclick="sendReminder('${s.id}')">واتساب</button>`:"✔"}</td>
-<td><button class="delete-btn" onclick="deleteSubscriber('${s.id}')">حذف</button></td>
+<td>$${rem}</td>
+<td class="${cls}">${txt}</td>
+<td>${rem>0?`<button class="reminder-btn" onclick="sendWA('${sub.fid}')">واتساب</button>`:"✔"}</td>
+<td><button class="delete-btn" onclick="del('${sub.fid}')">حذف</button></td>
 </tr>`;
   });
-};
+}
 
-window.sendReminder=function(id){
-  const s=subscribers.find(x=>x.id===id);
-  if(!s)return;
-  const paid=Object.values(s.payments||{}).reduce((a,p)=>a+Number(p.amount||0),0);
-  const remaining=s.price-paid;
-  const msg=`الاسم: ${s.name}\nالمتبقي: $${remaining}`;
+/* إضافة */
+addBtn.onclick=()=>{
+  if(!name.value||!phone.value||!price.value) return alert("بيانات ناقصة");
+  push(ref(db,"subscribers"),{
+    name:name.value,
+    phone:phone.value,
+    address:address.value,
+    price:Number(price.value),
+    payments:[]
+  });
+  name.value=phone.value=address.value=price.value="";
+}
+
+/* حذف */
+window.del=id=>confirm("تأكيد الحذف؟")&&remove(ref(db,"subscribers/"+id));
+
+/* واتساب */
+window.sendWA=id=>{
+  const s=subscribers.find(x=>x.fid==id);
+  const paid=s.payments.reduce((a,p)=>a+Number(p.amount),0);
+  const msg=`الاسم: ${s.name}\nالمتبقي: $${s.price-paid}`;
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
-};
-
-const nameInput=name;
-const phoneInput=phone;
-const addressInput=address;
-const priceInput=price;
-const searchInput=search;
-const filterStatus=filterStatus;
+}
 </script>
 
 </body>
