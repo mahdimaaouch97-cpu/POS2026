@@ -142,7 +142,7 @@ function renderTable(){
 
 /* الدفع */
 function pay(id){
-    const sub = subscribers.find(s=>s.id===id);
+    const sub = subscribers.find(s => s.id===id);
     const amountInput = document.getElementById(`pay-${id}`);
     const monthSelect = document.getElementById(`month-${id}`);
     const amount = parseFloat(amountInput.value);
@@ -155,12 +155,34 @@ function pay(id){
     }
 
     const month = monthSelect.value;
-    sub.payments.push({ amount, month, date: new Date().toLocaleDateString() });
+    const date = new Date().toLocaleDateString();
 
+    // أضف الدفع
+    sub.payments.push({ amount, month, date });
+
+    // تحديث Firebase
     update(ref(db, "subscribers/" + sub.fid), { payments: sub.payments })
-        .then(()=> renderTable());
+      .then(()=>{
+          // تحديث الصف فقط
+          const row = amountInput.closest("tr");
+          const newPaid = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0).toFixed(2);
+          const newRemaining = +(sub.price - newPaid).toFixed(2);
 
-    sendWhatsApp(id, amount, month);
+          row.cells[5].innerText = `$${newPaid}`;
+          row.cells[6].innerText = `$${newRemaining}`;
+          row.cells[7].innerHTML = newRemaining===0 ? '<span class="status-paid">مدفوع كليًا</span>' :
+                                    newRemaining<sub.price ? '<span class="status-partial">مدفوع جزئيًا</span>' :
+                                    '<span class="status-unpaid">غير مدفوع</span>';
+
+          amountInput.value = "";
+          amountInput.max = newRemaining;
+          if(newRemaining===0){
+              amountInput.disabled = true;
+              row.querySelector(".pay-btn").disabled = true;
+          }
+
+          sendWhatsApp(id, amount, month);
+      });
 }
 
 /* واتساب */
