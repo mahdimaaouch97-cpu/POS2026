@@ -15,12 +15,12 @@ h1 { text-align:center; margin-bottom:15px; color:#333; }
 .search-filter input, select { flex:1; padding:8px; }
 .add-form { max-width:500px; margin:0 auto 15px; background:#fff; padding:15px; border-radius:8px; }
 .add-form input { width:100%; padding:8px; margin-bottom:10px; }
-.add-form button { width:100%; padding:10px; background:#007bff; color:white; border:none; }
+.add-form button { width:100%; padding:10px; background:#007bff; color:white; border:none; cursor:pointer; }
 table { width:100%; border-collapse:collapse; background:white; }
 th, td { padding:10px; border:1px solid #ddd; text-align:center; }
 th { background:#007bff; color:white; }
-.delete-btn { background:#dc3545; color:white; padding:5px 8px; border:none; }
-.reminder-btn { background:#25D366; color:white; padding:5px 8px; border:none; }
+.delete-btn { background:#dc3545; color:white; padding:5px 8px; border:none; cursor:pointer; }
+.reminder-btn { background:#25D366; color:white; padding:5px 8px; border:none; cursor:pointer; }
 .status-full { background:#388e3c; color:white; }
 .status-partial { background:#f57c00; color:white; }
 .status-unpaid { background:#c62828; color:white; }
@@ -85,6 +85,9 @@ const db = getDatabase(app);
 
 let subscribers = [];
 const tableBody = document.getElementById("tableBody");
+const search = document.getElementById("search");
+const filterStatus = document.getElementById("filterStatus");
+const addBtn = document.getElementById("addBtn");
 
 /* تحميل البيانات */
 onValue(ref(db,"subscribers"), snap => {
@@ -92,7 +95,10 @@ onValue(ref(db,"subscribers"), snap => {
   subscribers = Object.entries(data).map(([id,sub],i)=>({
     fid:id,
     id:i+1,
-    ...sub,
+    name: sub.name || "",
+    phone: sub.phone || "",
+    address: sub.address || "",
+    price: Number(sub.price||0),
     payments: sub.payments || []
   }));
   renderTable();
@@ -105,14 +111,14 @@ window.renderTable = function(){
   tableBody.innerHTML="";
 
   subscribers.filter(sub=>{
-    const paid=sub.payments.reduce((a,p)=>a+Number(p.amount),0);
-    const rem=sub.price-paid;
+    const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
+    const rem = sub.price - paid;
     let st="unpaid"; if(rem==0)st="full"; else if(rem<sub.price)st="partial";
     return (f=="all"||f==st) &&
       (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
   }).forEach(sub=>{
-    const paid=sub.payments.reduce((a,p)=>a+Number(p.amount),0);
-    const rem=sub.price-paid;
+    const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
+    const rem = sub.price - paid;
     let txt="غير مدفوع",cls="status-unpaid";
     if(rem==0){txt="مدفوع كليًا";cls="status-full";}
     else if(rem<sub.price){txt="جزئي";cls="status-partial";}
@@ -133,9 +139,9 @@ window.renderTable = function(){
   });
 }
 
-/* إضافة */
+/* إضافة مشترك */
 addBtn.onclick=()=>{
-  if(!name.value||!phone.value||!price.value) return alert("بيانات ناقصة");
+  if(!name.value || !phone.value || !price.value) return alert("بيانات ناقصة");
   push(ref(db,"subscribers"),{
     name:name.value,
     phone:phone.value,
@@ -146,14 +152,16 @@ addBtn.onclick=()=>{
   name.value=phone.value=address.value=price.value="";
 }
 
-/* حذف */
-window.del=id=>confirm("تأكيد الحذف؟")&&remove(ref(db,"subscribers/"+id));
+/* حذف مشترك */
+window.del=id=>confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
 
-/* واتساب */
+/* إرسال واتساب */
 window.sendWA=id=>{
   const s=subscribers.find(x=>x.fid==id);
-  const paid=s.payments.reduce((a,p)=>a+Number(p.amount),0);
-  const msg=`الاسم: ${s.name}\nالمتبقي: $${s.price-paid}`;
+  if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone; // إضافة مفتاح الدولة إذا لم يكن موجود
+  const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
+  const rem = s.price - paid;
+  const msg=`الاسم: ${s.name}\nالمتبقي: $${rem}`;
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
 </script>
