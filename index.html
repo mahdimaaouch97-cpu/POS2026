@@ -18,18 +18,16 @@ main { padding:20px; max-width:1200px; margin:auto; }
 .card { background:white; padding:20px; border-radius:8px; flex:1 1 200px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
 .card h2 { margin:0 0 10px 0; font-size:2em; }
 .quick-links { text-align:center; margin-top:20px; }
-.quick-links a { display:inline-block; margin:5px 10px; padding:10px 16px; background:#007bff; color:white; text-decoration:none; border-radius:5px; transition:0.3s; }
-.quick-links a:hover { background:#0056b3; }
 .delete-all-btn { background:#e74c3c; color:white; padding:10px 16px; border:none; border-radius:5px; cursor:pointer; margin-top:10px; }
 footer { text-align:center; padding:15px; background:#f1f1f1; margin-top:30px; }
 </style>
 </head>
 <body>
 
-<!-- حماية الصفحة بكلمة المرور -->
+<!-- حماية الصفحة -->
 <script>
-if(localStorage.getItem("auth")!=="1"){
-    location.href="login.html"; // إعادة التوجيه لصفحة تسجيل الدخول
+if(localStorage.getItem("auth") !== "1"){
+  location.href = "login.html";
 }
 </script>
 
@@ -62,10 +60,7 @@ if(localStorage.getItem("auth")!=="1"){
 </section>
 
 <section class="quick-links">
-<!-- زر حذف جميع البيانات -->
 <button id="deleteAllBtn" class="delete-all-btn">حذف جميع البيانات</button>
-
-<!-- زر تسجيل خروج -->
 <button onclick="logout()" class="delete-all-btn" style="background:#555;">تسجيل خروج</button>
 </section>
 </main>
@@ -74,39 +69,64 @@ if(localStorage.getItem("auth")!=="1"){
 <p>© 2026 FAST NET. جميع الحقوق محفوظة.</p>
 </footer>
 
-<script>
+<!-- 🔥 Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, remove }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
+  authDomain: "pos2026-310b7.firebaseapp.com",
+  databaseURL: "https://pos2026-310b7-default-rtdb.firebaseio.com",
+  projectId: "pos2026-310b7",
+  storageBucket: "pos2026-310b7.appspot.com",
+  messagingSenderId: "221592625111",
+  appId: "1:221592625111:web:81b9704a1fa790bcd0f592"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 // تسجيل الخروج
-function logout(){
-    localStorage.removeItem("auth");
-    location.href="login.html";
-}
+window.logout = function(){
+  localStorage.removeItem("auth");
+  location.href = "login.html";
+};
 
-// تحميل البيانات من LocalStorage
-let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
-let receipts = JSON.parse(localStorage.getItem("receipts")) || [];
+// جلب المشتركين
+onValue(ref(db, "subscribers"), snapshot => {
+  const data = snapshot.val() || {};
+  const subscribers = Object.values(data);
 
-// تحديث الأرقام على لوحة التحكم
-document.getElementById("totalSubscribers").textContent = subscribers.length;
-document.getElementById("totalReceipts").textContent = receipts.length;
+  document.getElementById("totalSubscribers").textContent = subscribers.length;
 
-// حساب إجمالي الإيرادات
-let totalRevenue = 0;
-subscribers.forEach(sub => {
-    const paid = sub.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+  let totalRevenue = 0;
+  subscribers.forEach(sub => {
+    const paid = sub.payments
+      ? Object.values(sub.payments).reduce((s,p)=>s+Number(p.amount||0),0)
+      : 0;
     totalRevenue += paid;
-});
-document.getElementById("totalRevenue").textContent = `$${totalRevenue.toFixed(2)}`;
+  });
 
-// زر حذف جميع البيانات
-document.getElementById("deleteAllBtn").addEventListener("click", function() {
-    if(confirm("هل أنت متأكد من حذف جميع البيانات في المشتركين، الدفع، والإيصالات؟ لا يمكن التراجع!")) {
-        localStorage.removeItem("subscribers");
-        localStorage.removeItem("receipts");
-        localStorage.removeItem("lastReceiptNumber");
-        alert("تم حذف جميع البيانات بنجاح!");
-        location.reload();
-    }
+  document.getElementById("totalRevenue").textContent =
+    `$${totalRevenue.toFixed(2)}`;
 });
+
+// جلب الإيصالات
+onValue(ref(db, "receipts"), snapshot => {
+  const data = snapshot.val() || {};
+  document.getElementById("totalReceipts").textContent =
+    Object.keys(data).length;
+});
+
+// حذف جميع البيانات
+document.getElementById("deleteAllBtn").onclick = () => {
+  if(confirm("هل أنت متأكد من حذف جميع البيانات؟")){
+    remove(ref(db));
+    alert("تم حذف جميع البيانات");
+  }
+};
 </script>
 
 </body>
