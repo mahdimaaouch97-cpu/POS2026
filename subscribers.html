@@ -83,11 +83,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let subscribers = [];
+/* الحقول */
+const nameInput = document.getElementById("name");
+const phoneInput = document.getElementById("phone");
+const addressInput = document.getElementById("address");
+const priceInput = document.getElementById("price");
+const addBtn = document.getElementById("addBtn");
 const tableBody = document.getElementById("tableBody");
 const search = document.getElementById("search");
 const filterStatus = document.getElementById("filterStatus");
-const addBtn = document.getElementById("addBtn");
+
+let subscribers = [];
 
 /* تحميل البيانات */
 onValue(ref(db,"subscribers"), snap => {
@@ -140,28 +146,31 @@ window.renderTable = function(){
 }
 
 /* إضافة مشترك */
-addBtn.onclick=()=>{
-  if(!name.value || !phone.value || !price.value) return alert("بيانات ناقصة");
+addBtn.onclick = () => {
+  if(!nameInput.value || !phoneInput.value || !priceInput.value) 
+      return alert("بيانات ناقصة");
+
   push(ref(db,"subscribers"),{
-    name:name.value,
-    phone:phone.value,
-    address:address.value,
-    price:Number(price.value),
+    name: nameInput.value,
+    phone: phoneInput.value,
+    address: addressInput.value,
+    price: Number(priceInput.value),
     payments:[]
   });
-  name.value=phone.value=address.value=price.value="";
+
+  nameInput.value = phoneInput.value = addressInput.value = priceInput.value = "";
 }
 
 /* حذف مشترك */
-window.del=id=>confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
+window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
 
 /* إرسال واتساب */
-window.sendWA=id=>{
-  const s=subscribers.find(x=>x.fid==id);
-  if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone; // إضافة مفتاح الدولة إذا لم يكن موجود
+window.sendWA = id => {
+  const s = subscribers.find(x => x.fid == id);
+  if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone;
   const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
   const rem = s.price - paid;
-  const msg=`الاسم: ${s.name}\nالمتبقي: $${rem}`;
+  const msg = `الاسم: ${s.name}\nالمتبقي: $${rem}`;
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
 </script>
