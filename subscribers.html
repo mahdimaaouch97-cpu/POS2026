@@ -25,6 +25,9 @@ th { background:#007bff; color:white; }
 .status-partial { background:#f57c00; color:white; }
 .status-unpaid { background:#c62828; color:white; }
 </style>
+
+<!-- مكتبة SheetJS -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -34,6 +37,9 @@ th { background:#007bff; color:white; }
 <div class="top-buttons">
   <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
   <button class="home-btn" onclick="location.href='payments.html'">الدفع</button>
+  <input type="file" id="importFile" style="display:none" accept=".xlsx,.xls">
+  <button class="home-btn" onclick="document.getElementById('importFile').click()">استيراد من Excel</button>
+  <button class="home-btn" onclick="exportToExcel()">تصدير إلى Excel</button>
 </div>
 
 <div class="search-filter">
@@ -178,18 +184,68 @@ window.sendWA = id => {
     alert(`${s.name} دفع كامل المبلغ بالفعل!`);
     return;
   } else if(rem < s.price){
-    // مدفوع جزئيًا
-    msg = `مرحبًا ${s.name}،\nلقد تم دفع جزء من اشتراكك.\nالمبلغ المتبقي: $${rem}.\nنرجو تسديده  في أقرب وقت. شكرًا لك.`;
+    msg = `مرحبًا ${s.name}،\nلقد تم دفع جزء من اشتراكك.\nالمبلغ المتبقي: $${rem}.\nنرجو تسديده في أقرب وقت. شكرًا لك.`;
   } else {
-    // غير مدفوع
     msg = `مرحبًا ${s.name}،\nنود تذكيرك بأن مبلغ اشتراكك كاملًا $${s.price} لم يتم دفعه بعد.\nيرجى الدفع في أقرب وقت ممكن. شكرًا لك.`;
   }
 
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
+
+/* استيراد من Excel */
+document.getElementById('importFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const data = new Uint8Array(evt.target.result);
+    const workbook = XLSX.read(data, {type:'array'});
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const json = XLSX.utils.sheet_to_json(sheet);
+
+    json.forEach(row=>{
+      if(row.الاسم && row.الهاتف && row.سعر){
+        push(ref(db,"subscribers"),{
+          name: row.الاسم,
+          phone: row.الهاتف.toString(),
+          address: row.العنوان || "",
+          price: Number(row.سعر),
+          payments: []
+        });
+      }
+    });
+    alert("تم استيراد البيانات بنجاح!");
+    e.target.value = "";
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+/* تصدير إلى Excel */
+function exportToExcel(){
+  const data = subscribers.map(sub=>({
+    "#": sub.id,
+    "الاسم": sub.name,
+    "الهاتف": sub.phone,
+    "العنوان": sub.address,
+    "السعر": sub.price,
+    "المدفوع": (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0),
+    "المتبقي": sub.price - (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0),
+    "الحالة": (()=>{
+        const rem = sub.price - (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
+        if(rem===0) return "مدفوع كليًا";
+        if(rem<sub.price) return "جزئي";
+        return "غير مدفوع";
+    })()
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "المشتركين");
+  XLSX.writeFile(wb, "subscribers.xlsx");
+}
 </script>
 
 </body>
 </html>
-
-
