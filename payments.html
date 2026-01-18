@@ -43,7 +43,7 @@ input[type=number] { width:70px; text-align:center; border-radius:4px; border:1p
 <th>الاسم</th>
 <th>الهاتف</th>
 <th>العنوان</th>
-<th>سعر الاشتراك</th>
+<th><button class="back-btn" onclick="window.location.href='index.html'">العودة للرئيسية</button></th>
 <th>المدفوع</th>
 <th>المتبقي</th>
 <th>حالة الدفع</th>
@@ -166,6 +166,7 @@ function renderTable(){
                 <table style="width:100%; border-collapse:collapse; direction:rtl; text-align:right; font-size:12px;">
                     <tr><td>الاسم:</td><td>${sub.name}</td></tr>
                     <tr><td>العنوان:</td><td>${sub.address}</td></tr>
+                    <tr><td>سعر الاشتراك:</td><td>$${sub.price}</td></tr>
                     <tr><td>المدفوع:</td><td>$${last.amount}</td></tr>
                     <tr><td>المتبقي:</td><td>$${remainingPrint}</td></tr>
                     <tr><td>الشهر:</td><td>${last.month}</td></tr>
@@ -202,6 +203,7 @@ function sendWhatsApp(sub, amount=null, month=null){
     const msg = `📩 إشعار دفع FAST NET
 👤 الاسم: ${sub.name}
 📍 العنوان: ${sub.address}
+💰 سعر الإشتراك :$${sub.price}
 💰 المدفوع : $${amount}
 💵 المتبقي: $${remaining}
 🗓️ الشهر: ${month}
