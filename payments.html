@@ -101,24 +101,14 @@ function renderTable(){
     const statusFilterValue = filterStatus.value;
     tableBody.innerHTML = "";
 
-    let filtered = subscribers.filter(sub => {
+    subscribers.forEach(sub => {
         const paidAmount = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0);
         const remaining = +(sub.price - paidAmount).toFixed(2);
         const status = remaining === 0 ? "full" : (remaining < sub.price ? "partial" : "unpaid");
 
-        const matchesSearch = sub.name.toLowerCase().includes(searchFilter) || sub.phone.includes(searchFilter);
-        const matchesStatus = statusFilterValue === "all" || status === statusFilterValue;
-        return matchesSearch && matchesStatus;
-    });
+        if(!(statusFilterValue==="all" || status===statusFilterValue)) return;
+        if(!(sub.name.toLowerCase().includes(searchFilter) || sub.phone.includes(searchFilter))) return;
 
-    if(filtered.length === 0){
-        tableBody.innerHTML = `<tr><td colspan="12">لا يوجد مشتركين مطابقين.</td></tr>`;
-        return;
-    }
-
-    filtered.forEach(sub => {
-        const paidAmount = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0).toFixed(2);
-        const remaining = +(sub.price - paidAmount).toFixed(2);
         const statusHtml = remaining === 0 ? '<span class="status-paid">مدفوع كليًا</span>' :
                            remaining < sub.price ? '<span class="status-partial">مدفوع جزئيًا</span>' :
                            '<span class="status-unpaid">غير مدفوع</span>';
@@ -130,7 +120,7 @@ function renderTable(){
             <td>${sub.phone}</td>
             <td>${sub.address}</td>
             <td>$${sub.price}</td>
-            <td>$${paidAmount}</td>
+            <td>$${paidAmount.toFixed(2)}</td>
             <td>$${remaining}</td>
             <td>${statusHtml}</td>
             <td>
@@ -139,46 +129,48 @@ function renderTable(){
                 </select>
             </td>
             <td>
-                <input type="number" id="pay-${sub.id}" min="0.01" max="${remaining}" step="0.01" ${remaining===0?"disabled":""}>
+                <input type="number" id="pay-${sub.id}" min="0.01" max="${remaining}" step="0.01" value="" ${remaining===0?"disabled":""}>
                 <button class="pay-btn" onclick="pay(${sub.id})" ${remaining===0?"disabled":""}>دفع</button>
             </td>
             <td><button class="print-btn" onclick="printReceipt(${sub.id})">طباعة</button></td>
             <td><button class="wa-btn" onclick="sendWhatsApp(${sub.id})">واتساب</button></td>
         </tr>`;
     });
+
+    if(tableBody.innerHTML==="") tableBody.innerHTML=`<tr><td colspan="12">لا يوجد مشتركين مطابقين.</td></tr>`;
 }
 
 /* الدفع */
 function pay(id){
-    const sub = subscribers.find(s => s.id === id);
+    const sub = subscribers.find(s=>s.id===id);
     const amountInput = document.getElementById(`pay-${id}`);
     const monthSelect = document.getElementById(`month-${id}`);
     const amount = parseFloat(amountInput.value);
-    const month = monthSelect.value;
 
     const paidAmount = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0);
     const remaining = +(sub.price - paidAmount).toFixed(2);
 
-    if(isNaN(amount) || amount <= 0 || amount > remaining) return alert("الرجاء إدخال مبلغ صالح.");
+    if(isNaN(amount) || amount <=0 || amount > remaining){
+        return alert(`الرجاء إدخال مبلغ صالح. الحد الأقصى: $${remaining}`);
+    }
 
+    const month = monthSelect.value;
     sub.payments.push({ amount, month, date: new Date().toLocaleDateString() });
 
-    // تحديث Firebase
-    update(ref(db, "subscribers/" + sub.fid), { payments: sub.payments });
+    update(ref(db, "subscribers/" + sub.fid), { payments: sub.payments })
+        .then(()=> renderTable());
 
-    renderTable();
     sendWhatsApp(id, amount, month);
 }
 
 /* واتساب */
 function sendWhatsApp(id, amount=null, month=null){
-    const sub = subscribers.find(s => s.id===id);
+    const sub = subscribers.find(s=>s.id===id);
     if(!sub) return;
 
     const lastPayment = sub.payments[sub.payments.length-1];
     amount = amount ?? lastPayment.amount;
     month = month ?? lastPayment.month;
-
     const totalPaid = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0);
     const remaining = +(sub.price - totalPaid).toFixed(2);
     const date = lastPayment.date;
@@ -198,7 +190,7 @@ function sendWhatsApp(id, amount=null, month=null){
 
 /* طباعة */
 function printReceipt(id){
-    const sub = subscribers.find(s => s.id===id);
+    const sub = subscribers.find(s=>s.id===id);
     if(!sub || sub.payments.length===0) return alert("لا توجد دفعات");
 
     const last = sub.payments[sub.payments.length-1];
@@ -226,7 +218,7 @@ function printReceipt(id){
     `);
     receiptWin.print();
 }
-
 </script>
+
 </body>
 </html>
