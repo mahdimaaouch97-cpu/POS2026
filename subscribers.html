@@ -27,7 +27,7 @@ th { background:#007bff; color:white; }
 </style>
 
 <!-- مكتبة SheetJS -->
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -89,7 +89,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* الحقول */
 const nameInput = document.getElementById("name");
 const phoneInput = document.getElementById("phone");
 const addressInput = document.getElementById("address");
@@ -121,13 +120,11 @@ window.renderTable = function(){
   const s = search.value.toLowerCase();
   const f = filterStatus.value;
   tableBody.innerHTML="";
-
   subscribers.filter(sub=>{
     const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
     const rem = sub.price - paid;
-    let st="unpaid"; if(rem==0)st="full"; else if(rem<sub.price)st="partial";
-    return (f=="all"||f==st) &&
-      (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
+    let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
+    return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
   }).forEach(sub=>{
     const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
     const rem = sub.price - paid;
@@ -151,11 +148,9 @@ window.renderTable = function(){
   });
 }
 
-/* إضافة مشترك */
+/* إضافة وحذف المشتركين */
 addBtn.onclick = () => {
-  if(!nameInput.value || !phoneInput.value || !priceInput.value) 
-      return alert("بيانات ناقصة");
-
+  if(!nameInput.value || !phoneInput.value || !priceInput.value) return alert("بيانات ناقصة");
   push(ref(db,"subscribers"),{
     name: nameInput.value,
     phone: phoneInput.value,
@@ -163,103 +158,72 @@ addBtn.onclick = () => {
     price: Number(priceInput.value),
     payments:[]
   });
-
   nameInput.value = phoneInput.value = addressInput.value = priceInput.value = "";
 }
-
-/* حذف مشترك */
 window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
 
-/* إرسال واتساب */
+/* واتساب */
 window.sendWA = id => {
   const s = subscribers.find(x => x.fid == id);
   if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone;
-
   const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
   const rem = s.price - paid;
-
-  let msg = "";
-
-  if(rem === 0){
-    alert(`${s.name} دفع كامل المبلغ بالفعل!`);
-    return;
-  } else if(rem < s.price){
-    msg = `مرحبًا ${s.name},\nلقد تم دفع جزء من اشتراكك.\nالمبلغ المتبقي: $${rem}.\nنرجو تسديده في أقرب وقت. شكرًا لك.`;
-  } else {
-    msg = `مرحبًا ${s.name},\nنود تذكيرك بأن مبلغ اشتراكك كاملًا $${s.price} لم يتم دفعه بعد.\nيرجى الدفع في أقرب وقت ممكن. شكرًا لك.`;
-  }
-
+  let msg="";
+  if(rem===0){alert(`${s.name} دفع كامل المبلغ بالفعل!`); return;}
+  else if(rem< s.price){msg=`مرحبًا ${s.name},\nتم دفع جزء من اشتراكك.\nالمتبقي: $${rem}.\nالرجاء الدفع في أقرب وقت.`;}
+  else {msg=`مرحبًا ${s.name},\nاشتراكك كامل $${s.price} لم يتم دفعه بعد.\nيرجى الدفع.`;}
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
 
 /* استيراد من Excel */
 document.getElementById('importFile').addEventListener('change', function(e){
-  const file = e.target.files[0];
-  if(!file) return;
-
+  const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
   reader.onload = function(evt){
     const data = new Uint8Array(evt.target.result);
     const workbook = XLSX.read(data, {type:'array'});
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet);
-
     json.forEach(row=>{
       if(row.الاسم && row.الهاتف && row.سعر){
         push(ref(db,"subscribers"),{
           name: row.الاسم,
           phone: row.الهاتف.toString(),
-          address: row.العنوان || "",
-          price: Number(row.سعر),
-          payments: []
+          address: row.العنوان||"",
+          price:Number(row.سعر),
+          payments:[]
         });
       }
     });
     alert("تم استيراد البيانات بنجاح!");
-    e.target.value = "";
+    e.target.value="";
   };
   reader.readAsArrayBuffer(file);
 });
 
-/* تصدير إلى Excel مع البيانات الحية من Firebase */
-function exportToExcel() {
-  const dbRef = ref(db, "subscribers");
-  onValue(dbRef, snap => {
+/* تصدير إلى Excel */
+window.exportToExcel = function() {
+  const dbRef = ref(db,"subscribers");
+  onValue(dbRef, snap=>{
     const dataFirebase = snap.val();
-    if (!dataFirebase) {
-      alert("لا يوجد مشتركين للتصدير!");
-      return;
-    }
-
-    const subscribersList = Object.entries(dataFirebase).map(([id, sub], i) => {
+    if(!dataFirebase){alert("لا يوجد مشتركين للتصدير!"); return;}
+    const list = Object.entries(dataFirebase).map(([id,sub],i)=>{
       const payments = sub.payments || [];
-      const paid = payments.reduce((a, p) => a + Number(p.amount || 0), 0);
+      const paid = payments.reduce((a,p)=>a+Number(p.amount||0),0);
       const rem = sub.price - paid;
-      let status = "غير مدفوع";
-      if (rem === 0) status = "مدفوع كليًا";
-      else if (rem < sub.price) status = "جزئي";
-
+      let status="غير مدفوع";
+      if(rem===0) status="مدفوع كليًا"; else if(rem<sub.price) status="جزئي";
       return {
-        "#": i + 1,
-        "الاسم": sub.name || "",
-        "الهاتف": sub.phone || "",
-        "العنوان": sub.address || "",
-        "السعر": sub.price || 0,
-        "المدفوع": paid,
-        "المتبقي": rem,
-        "الحالة": status
+        "#":i+1,"الاسم":sub.name,"الهاتف":sub.phone,"العنوان":sub.address,
+        "السعر":sub.price,"المدفوع":paid,"المتبقي":rem,"الحالة":status
       };
     });
-
-    const ws = XLSX.utils.json_to_sheet(subscribersList);
+    const ws = XLSX.utils.json_to_sheet(list);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "المشتركين");
     XLSX.writeFile(wb, "subscribers.xlsx");
-  }, { onlyOnce: true });
+  }, { onlyOnce:true });
 }
-
 </script>
-
 </body>
 </html>
