@@ -80,7 +80,7 @@ const filterSelect = document.getElementById("filterStatus");
 
 let subscribers = [];
 let receipts = [];
-let lastReceiptNumber = 5000; // البداية من 5000
+let lastReceiptNumber = 5000; // البداية من 5001
 
 // تحميل المشتركين من Firebase
 onValue(ref(db, "subscribers"), snap => {
