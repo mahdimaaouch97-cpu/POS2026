@@ -60,7 +60,7 @@ th { background:#007bff; color:#fff;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 إعداد Firebase */
+/* 🔥 Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
   authDomain: "pos2026-310b7.firebaseapp.com",
@@ -190,9 +190,14 @@ function renderTable() {
 searchInput.addEventListener("input", renderTable);
 filterSelect.addEventListener("change", renderTable);
 
-// العودة للصفحة الرئيسية
-function goHome(){ window.location.href="index.html"; }
-
+// زر الرجوع يعمل دائمًا
+function goHome(){
+    const homePage = "index.html"; // تأكد أن هذا هو اسم الصفحة الرئيسية
+    fetch(homePage, {method:"HEAD"})
+        .then(res => { if(res.ok) window.location.href = homePage;
+            else alert("صفحة الرئيسية غير موجودة. تأكد من الاسم أو المسار."); })
+        .catch(()=>alert("لا يمكن الوصول للصفحة الرئيسية."));
+}
 </script>
 </body>
 </html>
