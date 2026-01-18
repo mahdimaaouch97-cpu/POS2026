@@ -224,42 +224,44 @@ document.getElementById('importFile').addEventListener('change', function(e){
 
 /* تصدير إلى Excel - نسخة مصححة */
 function exportToExcel() {
-  if (!subscribers || subscribers.length === 0) {
-    alert("لا يوجد مشتركين للتصدير!");
-    return;
-  }
+  const dbRef = ref(db, "subscribers");
+  onValue(dbRef, snap => {
+    const dataFirebase = snap.val();
+    if (!dataFirebase) {
+      alert("لا يوجد مشتركين للتصدير!");
+      return;
+    }
 
-  const data = subscribers.map(sub => {
-    const paid = (sub.payments || []).reduce((a, p) => a + Number(p.amount || 0), 0);
-    const rem = sub.price - paid;
-    let status = "غير مدفوع";
-    if (rem === 0) status = "مدفوع كليًا";
-    else if (rem < sub.price) status = "جزئي";
+    const subscribersList = Object.entries(dataFirebase).map(([id, sub], i) => {
+      const payments = sub.payments || [];
+      const paid = payments.reduce((a, p) => a + Number(p.amount || 0), 0);
+      const rem = sub.price - paid;
+      let status = "غير مدفوع";
+      if (rem === 0) status = "مدفوع كليًا";
+      else if (rem < sub.price) status = "جزئي";
 
-    return {
-      "#": sub.id,
-      "الاسم": sub.name,
-      "الهاتف": sub.phone,
-      "العنوان": sub.address,
-      "السعر": sub.price,
-      "المدفوع": paid,
-      "المتبقي": rem,
-      "الحالة": status
-    };
-  });
+      return {
+        "#": i + 1,
+        "الاسم": sub.name || "",
+        "الهاتف": sub.phone || "",
+        "العنوان": sub.address || "",
+        "السعر": sub.price || 0,
+        "المدفوع": paid,
+        "المتبقي": rem,
+        "الحالة": status
+      };
+    });
 
-  // إنشاء الورقة
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "المشتركين");
-
-  // تنزيل الملف
-  XLSX.writeFile(wb, "subscribers.xlsx");
+    const ws = XLSX.utils.json_to_sheet(subscribersList);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "المشتركين");
+    XLSX.writeFile(wb, "subscribers.xlsx");
+  }, { onlyOnce: true });
 }
-
 
 </script>
 
 </body>
 </html>
+
 
