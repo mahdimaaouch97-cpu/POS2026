@@ -5,120 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الإيصالات - FAST NET</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    direction: rtl;
-    margin: 0;
-    padding: 20px;
-}
-.container {
-    max-width: 1000px;
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 24px;
-}
-.controls {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-}
-.controls input, .controls select {
-    padding: 8px 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin: 5px 0;
-    flex: 1;
-    min-width: 150px;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: right;
-}
-th {
-    background: #007bff;
-    color: #fff;
-}
-.status-label {
-    padding: 3px 7px;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 12px;
-    display: inline-block;
-}
-.status-full { background: #28a745; }
-.status-partial { background: #ffc107; color: #000; }
-.status-none { background: #dc3545; }
-.print-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    border: none;
-    background: #007bff;
-    color: #fff;
-    border-radius: 4px;
-}
-.print-btn:hover { background: #0056b3; }
-.back-btn {
-    padding: 8px 12px; 
-    font-size: 14px; 
-    margin-bottom: 15px; 
-    border:none; 
-    border-radius:5px; 
-    background:#007bff; 
-    color:#fff; 
-    cursor:pointer;
-}
-.back-btn:hover { background:#0056b3; }
+body { font-family: Arial; background: #f5f5f5; direction: rtl; margin:0; padding:20px;}
+.container { max-width:1000px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+h1 { text-align:center; margin-bottom:20px; font-size:24px;}
+.controls { display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:15px;}
+.controls input, .controls select { padding:8px 10px; font-size:14px; border:1px solid #ccc; border-radius:5px; margin:5px 0; flex:1; min-width:150px;}
+table { width:100%; border-collapse:collapse; font-size:13px;}
+th, td { border:1px solid #ddd; padding:8px; text-align:right; vertical-align:middle;}
+th { background:#007bff; color:#fff;}
+.status-label { padding:3px 7px; border-radius:4px; color:#fff; font-size:12px; display:inline-block;}
+.status-full { background:#28a745; }
+.status-partial { background:#ffc107; color:#000; }
+.status-none { background:#dc3545; }
+.print-btn { padding:5px 10px; font-size:12px; cursor:pointer; border:none; background:#007bff; color:#fff; border-radius:4px;}
+.print-btn:hover { background:#0056b3;}
+.back-btn { padding:8px 12px; font-size:14px; margin-bottom:15px; border:none; border-radius:5px; background:#007bff; color:#fff; cursor:pointer;}
+.back-btn:hover { background:#0056b3;}
 </style>
 </head>
 <body>
 
 <div class="container">
-    <button class="back-btn" onclick="goHome()">← الرجوع إلى الصفحة الرئيسية</button>
+<button class="back-btn" onclick="goHome()">← الرجوع إلى الصفحة الرئيسية</button>
+<h1>قائمة الإيصالات</h1>
 
-    <h1>قائمة الإيصالات</h1>
+<div class="controls">
+    <input type="text" id="search" placeholder="بحث بالاسم...">
+    <select id="filterStatus">
+        <option value="all">الكل</option>
+        <option value="full">مدفوع كليًا</option>
+        <option value="partial">مدفوع جزئيًا</option>
+    </select>
+</div>
 
-    <div class="controls">
-        <input type="text" id="search" placeholder="بحث بالاسم...">
-        <select id="filterStatus">
-            <option value="all">الكل</option>
-            <option value="full">مدفوع كليًا</option>
-            <option value="partial">مدفوع جزئيًا</option>
-        </select>
-    </div>
-
-    <table>
-    <thead>
-    <tr>
-        <th>رقم الإيصال</th>
-        <th>المشترك</th>
-        <th>السعر</th>
-        <th>المدفوع</th>
-        <th>المتبقي</th>
-        <th>الشهر</th>
-        <th>الحالة</th>
-        <th>تاريخ الدفع</th>
-        <th>طباعة</th>
-    </tr>
-    </thead>
-    <tbody id="receiptsTableBody"></tbody>
-    </table>
+<table>
+<thead>
+<tr>
+<th>رقم الإيصال</th>
+<th>المشترك</th>
+<th>السعر</th>
+<th>المدفوع</th>
+<th>المتبقي</th>
+<th>الشهر</th>
+<th>الحالة</th>
+<th>تاريخ الدفع</th>
+<th>طباعة</th>
+</tr>
+</thead>
+<tbody id="receiptsTableBody"></tbody>
+</table>
 </div>
 
 <script type="module">
@@ -145,8 +80,9 @@ const filterSelect = document.getElementById("filterStatus");
 
 let subscribers = [];
 let receipts = [];
+let lastReceiptNumber = 5000; // البداية من 5000
 
-// تحميل البيانات من Firebase
+// تحميل المشتركين من Firebase
 onValue(ref(db, "subscribers"), snap => {
     const data = snap.val() || {};
     subscribers = Object.entries(data).map(([fid, sub], i) => ({
@@ -159,14 +95,16 @@ onValue(ref(db, "subscribers"), snap => {
         payments: Array.isArray(sub.payments) ? sub.payments : []
     }));
 
-    // إنشاء الإيصالات لكل دفعة لكل مشترك
+    // إنشاء الإيصالات لكل دفعة
     receipts = [];
     subscribers.forEach(sub => {
-        sub.payments.forEach((p, index) => {
-            const totalPaid = sub.payments.slice(0,index+1).reduce((a,b)=>a+b.amount,0);
+        sub.payments.forEach(p => {
+            lastReceiptNumber++;
+            const totalPaid = sub.payments.slice(0, sub.payments.indexOf(p)+1)
+                                 .reduce((a,b)=>a+b.amount,0);
             const remaining = +(sub.price - totalPaid).toFixed(2);
             receipts.push({
-                id: `${sub.id}-${index+1}`,
+                id: lastReceiptNumber,
                 subscriberId: sub.id,
                 name: sub.name,
                 address: sub.address,
@@ -220,7 +158,6 @@ function renderTable() {
             <td><button class="print-btn">طباعة</button></td>
         `;
 
-        // زر الطباعة
         tr.querySelector(".print-btn").addEventListener("click", ()=>{
             const win = window.open("", "PrintReceipt", "width=220,height=500");
             win.document.write(`
