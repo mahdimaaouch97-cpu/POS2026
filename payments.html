@@ -165,7 +165,6 @@ function renderTable(){
                 <hr>
                 <table style="width:100%; border-collapse:collapse; direction:rtl; text-align:right; font-size:12px;">
                     <tr><td>الاسم:</td><td>${sub.name}</td></tr>
-                    <tr><td>الهاتف:</td><td>${sub.phone}</td></tr>
                     <tr><td>العنوان:</td><td>${sub.address}</td></tr>
                     <tr><td>المدفوع:</td><td>$${last.amount}</td></tr>
                     <tr><td>المتبقي:</td><td>$${remainingPrint}</td></tr>
@@ -203,7 +202,6 @@ function sendWhatsApp(sub, amount=null, month=null){
     const msg = `📩 إشعار دفع FAST NET
 👤 الاسم: ${sub.name}
 📍 العنوان: ${sub.address}
-📞 الهاتف: ${sub.phone}
 💰 المدفوع : $${amount}
 💵 المتبقي: $${remaining}
 🗓️ الشهر: ${month}
