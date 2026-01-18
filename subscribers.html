@@ -184,9 +184,9 @@ window.sendWA = id => {
     alert(`${s.name} دفع كامل المبلغ بالفعل!`);
     return;
   } else if(rem < s.price){
-    msg = `مرحبًا ${s.name}،\nلقد تم دفع جزء من اشتراكك.\nالمبلغ المتبقي: $${rem}.\nنرجو تسديده في أقرب وقت. شكرًا لك.`;
+    msg = `مرحبًا ${s.name},\nلقد تم دفع جزء من اشتراكك.\nالمبلغ المتبقي: $${rem}.\nنرجو تسديده في أقرب وقت. شكرًا لك.`;
   } else {
-    msg = `مرحبًا ${s.name}،\nنود تذكيرك بأن مبلغ اشتراكك كاملًا $${s.price} لم يتم دفعه بعد.\nيرجى الدفع في أقرب وقت ممكن. شكرًا لك.`;
+    msg = `مرحبًا ${s.name},\nنود تذكيرك بأن مبلغ اشتراكك كاملًا $${s.price} لم يتم دفعه بعد.\nيرجى الدفع في أقرب وقت ممكن. شكرًا لك.`;
   }
 
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
@@ -222,7 +222,7 @@ document.getElementById('importFile').addEventListener('change', function(e){
   reader.readAsArrayBuffer(file);
 });
 
-/* تصدير إلى Excel - نسخة مصححة */
+/* تصدير إلى Excel مع البيانات الحية من Firebase */
 function exportToExcel() {
   const dbRef = ref(db, "subscribers");
   onValue(dbRef, snap => {
@@ -263,5 +263,3 @@ function exportToExcel() {
 
 </body>
 </html>
-
-
