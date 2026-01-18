@@ -222,30 +222,44 @@ document.getElementById('importFile').addEventListener('change', function(e){
   reader.readAsArrayBuffer(file);
 });
 
-/* تصدير إلى Excel */
-function exportToExcel(){
-  const data = subscribers.map(sub=>({
-    "#": sub.id,
-    "الاسم": sub.name,
-    "الهاتف": sub.phone,
-    "العنوان": sub.address,
-    "السعر": sub.price,
-    "المدفوع": (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0),
-    "المتبقي": sub.price - (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0),
-    "الحالة": (()=>{
-        const rem = sub.price - (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-        if(rem===0) return "مدفوع كليًا";
-        if(rem<sub.price) return "جزئي";
-        return "غير مدفوع";
-    })()
-  }));
+/* تصدير إلى Excel - نسخة مصححة */
+function exportToExcel() {
+  if (!subscribers || subscribers.length === 0) {
+    alert("لا يوجد مشتركين للتصدير!");
+    return;
+  }
 
+  const data = subscribers.map(sub => {
+    const paid = (sub.payments || []).reduce((a, p) => a + Number(p.amount || 0), 0);
+    const rem = sub.price - paid;
+    let status = "غير مدفوع";
+    if (rem === 0) status = "مدفوع كليًا";
+    else if (rem < sub.price) status = "جزئي";
+
+    return {
+      "#": sub.id,
+      "الاسم": sub.name,
+      "الهاتف": sub.phone,
+      "العنوان": sub.address,
+      "السعر": sub.price,
+      "المدفوع": paid,
+      "المتبقي": rem,
+      "الحالة": status
+    };
+  });
+
+  // إنشاء الورقة
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "المشتركين");
+
+  // تنزيل الملف
   XLSX.writeFile(wb, "subscribers.xlsx");
 }
+
+
 </script>
 
 </body>
 </html>
+
