@@ -162,18 +162,39 @@ addBtn.onclick = () => {
 }
 window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
 
-/* واتساب */
+/* واتساب - رسالة رسمية مع السعر وحالة الدفع */
 window.sendWA = id => {
   const s = subscribers.find(x => x.fid == id);
   if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone;
-  const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
+
+  // حساب المدفوع والمتبقي
+  const paid = (s.payments || []).reduce((a, p) => a + Number(p.amount || 0), 0);
   const rem = s.price - paid;
-  let msg="";
-  if(rem===0){alert(`${s.name} دفع كامل المبلغ بالفعل!`); return;}
-  else if(rem< s.price){msg=`مرحبًا ${s.name},\nتم دفع جزء من اشتراكك.\nالمتبقي: $${rem}.\nالرجاء الدفع في أقرب وقت.`;}
-  else {msg=`مرحبًا ${s.name},\nاشتراكك كامل $${s.price} لم يتم دفعه بعد.\nيرجى الدفع.`;}
+
+  // تحديد الرسالة حسب حالة الدفع
+  let msg = `السيد/ة ${s.name} المحترم/ة،\n`;
+  if(rem === 0){
+      alert(`${s.name} دفع كامل المبلغ بالفعل!`);
+      return;
+  }
+  else if(rem < s.price){
+      msg += `نذكركم بدفع إشتراك الإنترنت.\n`;
+      msg += `قيمة الاشتراك: $${s.price}\n`;
+      msg += `المبلغ المدفوع جزئيًا: $${paid}\n`;
+      msg += `المتبقي: $${rem}\n`;
+      msg += `يرجى دفع المبلغ المتبقي في أقرب وقت ممكن.`;
+  }
+  else{
+      msg += `نذكركم بدفع إشتراك الإنترنت.\n`;
+      msg += `قيمة الاشتراك: $${s.price}\n`;
+      msg += `لم يتم دفع أي مبلغ بعد.\n`;
+      msg += `يرجى دفع الاشتراك في أقرب وقت ممكن.`;
+  }
+
+  // فتح واتساب بالرسالة
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
+
 
 /* استيراد من Excel */
 document.getElementById('importFile').addEventListener('change', function(e){
@@ -241,3 +262,4 @@ window.exportToExcel = function() {
 </script>
 </body>
 </html>
+
