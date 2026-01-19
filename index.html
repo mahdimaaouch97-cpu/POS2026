@@ -28,13 +28,26 @@ nav ul li a {
   border-radius:6px;
   font-size:1.2em; 
   font-weight:600; 
-  transition: background 0.3s;
+  transition: background 0.3s, opacity 0.3s;
   display:inline-block;
   min-width:110px; 
   text-align:center;
 }
-nav ul li a.active, nav ul li a:hover { 
-  background-color:#0056b3; 
+
+/* ===== ألوان محددة لكل زر ===== */
+nav ul li a[href="index.html"] { background-color: #4682B4; } /* أزرق متوسط */
+nav ul li a[href="subscribers.html"] { background-color: #7BB661; } /* أخضر متوسط */
+nav ul li a[href="payments.html"] { background-color: #F5A623; } /* برتقالي متوسط */
+nav ul li a[href="receipts.html"] { background-color: #9B59B6; } /* أرجواني متوسط */
+
+/* تأثير المرور على الأزرار */
+nav ul li a:hover {
+  opacity: 0.85;
+}
+
+/* الزر النشط يبقى واضح */
+nav ul li a.active {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* ===== المحتوى الرئيسي ===== */
