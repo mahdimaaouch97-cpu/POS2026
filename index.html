@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
 /* ===== قاعدة الصفحة ===== */
-body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:0; }
+body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; background:#f5f5f5; margin:0; padding:0; color:#333; }
 header { background:#007bff; color:white; padding:15px; text-align:center; }
 header h1 { margin:0; font-size:1.8em; }
 
@@ -46,22 +46,27 @@ main { padding:30px 20px; max-width:1200px; margin:auto; }
   justify-content:center; 
   margin-bottom:30px; 
 }
+
+/* ===== البطاقات ===== */
 .card { 
   padding:25px 20px; 
-  border-radius:10px; 
+  border-radius:12px; 
   flex:1 1 250px; 
   text-align:center; 
   box-shadow:0 4px 10px rgba(0,0,0,0.1); 
   min-width:220px;
-  color:#333;
+  font-weight:600; 
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-/* تلوين كل بطاقة */
-.card.subscribers { background:#4682B4; }   /* أزرق فاتح */
-.card.receipts { background:#d4edda; }      /* أخضر فاتح */
-.card.revenue { background:#ffe5b4; }       /* برتقالي فاتح */
+.card:hover { transform: translateY(-3px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
 
-.card h2 { margin:0 0 10px 0; font-size:2em; color:#007bff; }
-.card p { margin:0; font-size:1em; color:#555; }
+/* ===== ألوان البطاقات متوسطة ومريحة ===== */
+.card.subscribers { background:#4682B4; color:#fff; border:2px solid #315f7f; } /* أزرق متوسط */
+.card.receipts    { background:#7BB661; color:#fff; border:2px solid #5A8C43; } /* أخضر متوسط */
+.card.revenue     { background:#F5A623; color:#fff; border:2px solid #D4881C; } /* برتقالي متوسط */
+
+.card h2 { margin:0 0 10px 0; font-size:2em; color:#ffffff; }
+.card p { margin:0; font-size:1em; color:#f0f0f0; }
 
 /* ===== الأزرار السريعة ===== */
 .quick-links { text-align:center; margin-top:20px; display:flex; gap:15px; justify-content:center; flex-wrap:wrap; }
@@ -77,7 +82,6 @@ main { padding:30px 20px; max-width:1200px; margin:auto; }
   transition: background 0.3s;
 }
 .delete-all-btn:hover { background:#c0392b; }
-
 .delete-all-btn.secondary { background:#555; }
 .delete-all-btn.secondary:hover { background:#333; }
 
