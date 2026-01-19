@@ -184,17 +184,21 @@ document.getElementById('importFile').addEventListener('change', function(e){
     const workbook = XLSX.read(data, {type:'array'});
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet);
-    json.forEach(row=>{
-      if(row.الاسم && row.الهاتف && row.سعر){
-        push(ref(db,"subscribers"),{
-          name: row.الاسم,
-          phone: row.الهاتف.toString(),
-          address: row.العنوان||"",
-          price:Number(row.سعر),
-          payments:[]
-        });
-      }
+   json.forEach(row=>{
+  if(row.الاسم && row.الهاتف && row.سعر){
+    push(ref(db,"subscribers"),{
+      name: row.الاسم,
+      phone: row.الهاتف.toString(),
+      address: row.العنوان || "",
+      price: Number(row.سعر),
+      payments: []
+    }).catch(err => {
+      console.error("Firebase Error:", err);
+      alert("فشل الحفظ في Firebase");
     });
+  }
+});
+
     alert("تم استيراد البيانات بنجاح!");
     e.target.value="";
   };
@@ -227,5 +231,6 @@ window.exportToExcel = function() {
 </script>
 </body>
 </html>
+
 
 
