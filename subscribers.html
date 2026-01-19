@@ -89,9 +89,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-
-
-
 const nameInput = document.getElementById("name");
 const phoneInput = document.getElementById("phone");
 const addressInput = document.getElementById("address");
@@ -218,7 +215,6 @@ document.getElementById('importFile').addEventListener('change', function(e){
   reader.readAsArrayBuffer(file);
 });
 
-
 /* تصدير إلى Excel */
 window.exportToExcel = function() {
   const dbRef = ref(db,"subscribers");
@@ -245,12 +241,3 @@ window.exportToExcel = function() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
