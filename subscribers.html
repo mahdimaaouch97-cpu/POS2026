@@ -9,28 +9,47 @@
 * { box-sizing: border-box; }
 body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; background: #eef1f5; margin:0; padding:20px; direction:rtl; color:#333; }
 h1 { text-align:center; margin-bottom:25px; color:#222; }
+
+/* Buttons */
 .top-buttons { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:20px; }
 .top-buttons button { padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; background:#0d6efd; color:white; transition:0.2s; }
 .top-buttons button:hover { opacity:0.85; transform:translateY(-1px); }
+
+/* Search & Filter */
 .search-filter { max-width:500px; margin:0 auto 20px; display:flex; gap:10px; }
 .search-filter input, .search-filter select { padding:10px; border-radius:8px; border:1px solid #ccc; flex:1; }
+
+/* Add Form */
 .add-form { max-width:520px; margin:0 auto 25px; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.08); }
 .add-form input { width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:1px solid #ccc; }
 .add-form button { width:100%; padding:12px; border-radius:8px; border:none; background:#198754; color:white; font-size:15px; cursor:pointer; }
 .add-form button:hover { opacity:0.9; }
-table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.08); border:2px solid #000; }
-th { background:#0d6efd; color:white; padding:12px; font-size:14px; border:2px solid #000; }
-td { padding:10px; border-bottom:1px solid #eee; text-align:center; font-size:14px; border:2px solid #000; color:#000; }
+
+/* Table */
+table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.08); }
+th { background:#0d6efd; color:white; padding:12px; font-size:14px; }
+td { padding:10px; border-bottom:1px solid #eee; text-align:center; font-size:14px; }
 tr:hover { background:#f5f8ff; }
+
+/* Status */
 .status-full { background:#198754; color:white; padding:4px 8px; border-radius:6px; }
 .status-partial { background:#fd7e14; color:white; padding:4px 8px; border-radius:6px; }
 .status-unpaid { background:#dc3545; color:white; padding:4px 8px; border-radius:6px; }
+
+/* Action Buttons */
 .delete-btn { background:#dc3545; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
 .reminder-btn { background:#25D366; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
 .delete-btn:hover, .reminder-btn:hover { opacity:0.85; }
+
+/* Responsive */
 @media (max-width:768px) { table { font-size:12px; } .top-buttons { flex-direction:column; } }
+
+/* خطوط الجدول بالأسود */
+table { border:2px solid #000; }
+th, td { border:2px solid #000; color:#000; }
 </style>
 
+<!-- مكتبة SheetJS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
@@ -39,11 +58,8 @@ tr:hover { background:#f5f8ff; }
 <h1>إدارة المشتركين</h1>
 
 <div class="top-buttons">
-  <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
-  <button class="home-btn" onclick="location.href='payments.html'">الدفع</button>
   <input type="file" id="importFile" style="display:none" accept=".xlsx,.xls">
   <button class="home-btn" onclick="document.getElementById('importFile').click()">استيراد من Excel</button>
-  <button class="home-btn" onclick="exportToExcel()">تصدير إلى Excel</button>
 </div>
 
 <div class="search-filter">
@@ -56,192 +72,86 @@ tr:hover { background:#f5f8ff; }
   </select>
 </div>
 
-<div class="add-form">
-  <input id="name" placeholder="اسم المشترك">
-  <input id="phone" placeholder="رقم الهاتف">
-  <input id="address" placeholder="العنوان">
-  <input id="price" type="number" placeholder="سعر الاشتراك">
-  <button id="addBtn">إضافة مشترك</button>
-</div>
-
 <table>
 <thead>
 <tr>
 <th>#</th><th>الاسم</th><th>الهاتف</th><th>العنوان</th>
 <th>السعر</th><th>المدفوع</th><th>المتبقي</th>
-<th>الحالة</th><th>تذكير واتساب</th><th>حذف</th>
+<th>الحالة</th><th> تذكير واتساب</th><th>حذف</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
-  authDomain: "pos2026-310b7.firebaseapp.com",
-  databaseURL: "https://pos2026-310b7-default-rtdb.firebaseio.com",
-  projectId: "pos2026-310b7",
-  storageBucket: "pos2026-310b7.appspot.com",
-  messagingSenderId: "221592625111",
-  appId: "1:221592625111:web:81b9704a1fa790bcd0f592"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const nameInput = document.getElementById("name");
-const phoneInput = document.getElementById("phone");
-const addressInput = document.getElementById("address");
-const priceInput = document.getElementById("price");
-const addBtn = document.getElementById("addBtn");
-const tableBody = document.getElementById("tableBody");
-const search = document.getElementById("search");
-const filterStatus = document.getElementById("filterStatus");
-
+<script>
 let subscribers = [];
 
-onValue(ref(db,"subscribers"), snap => {
-  const data = snap.val() || {};
-  subscribers = Object.entries(data).map(([id,sub],i)=>({
-    fid:id,
-    id:i+1,
-    name: sub.name || "",
-    phone: sub.phone || "",
-    address: sub.address || "",
-    price: Number(sub.price||0),
-    payments: sub.payments || []
-  }));
-  renderTable();
-});
+// عرض الجدول
+function renderTable(){
+  const s = document.getElementById("search").value.toLowerCase();
+  const f = document.getElementById("filterStatus").value;
+  const tableBody = document.getElementById("tableBody");
+  tableBody.innerHTML = "";
 
-window.renderTable = function(){
-  const s = search.value.toLowerCase();
-  const f = filterStatus.value;
-  tableBody.innerHTML="";
   subscribers.filter(sub=>{
-    const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-    const rem = sub.price - paid;
+    const rem = sub.price - (sub.paid || 0);
     let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
     return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
-  }).forEach(sub=>{
-    const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-    const rem = sub.price - paid;
-    let txt="غير مدفوع",cls="status-unpaid";
-    if(rem==0){txt="مدفوع كليًا";cls="status-full";}
-    else if(rem<sub.price){txt="جزئي";cls="status-partial";}
-    tableBody.innerHTML+=`
+  }).forEach((sub,i)=>{
+    const rem = sub.price - (sub.paid || 0);
+    let txt="غير مدفوع", cls="status-unpaid";
+    if(rem==0){txt="مدفوع كليًا"; cls="status-full";}
+    else if(rem<sub.price){txt="جزئي"; cls="status-partial";}
+
+    tableBody.innerHTML += `
 <tr>
-<td>${sub.id}</td>
+<td>${i+1}</td>
 <td>${sub.name}</td>
 <td>${sub.phone}</td>
 <td>${sub.address}</td>
 <td>$${sub.price}</td>
-<td>$${paid}</td>
+<td>$${sub.paid||0}</td>
 <td>$${rem}</td>
 <td class="${cls}">${txt}</td>
-<td>${rem>0?`<button class="reminder-btn" onclick="sendWA('${sub.fid}')">تذكير واتساب</button>`:"✔"}</td>
-<td><button class="delete-btn" onclick="del('${sub.fid}')">حذف</button></td>
+<td>${rem>0?`<button class="reminder-btn"> تذكير واتساب </button>`:"✔"}</td>
+<td><button class="delete-btn">حذف</button></td>
 </tr>`;
   });
 }
 
-addBtn.onclick = () => {
-  if(!nameInput.value || !phoneInput.value || !priceInput.value) return alert("بيانات ناقصة");
-  push(ref(db,"subscribers"),{
-    name: nameInput.value,
-    phone: phoneInput.value,
-    address: addressInput.value,
-    price: Number(priceInput.value),
-    payments:[]
-  });
-  nameInput.value = phoneInput.value = addressInput.value = priceInput.value = "";
-}
-
-window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
-
-window.sendWA = id => {
-  const s = subscribers.find(x => x.fid == id);
-  if(!s) return;
-  if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone;
-  const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-  const rem = s.price - paid;
-  let msg = "";
-  if(rem===0){ alert(`${s.name} دفع كامل المبلغ بالفعل!`); return; }
-  else if(rem< s.price){ msg=`مرحبًا ${s.name},\nتم دفع جزء من اشتراكك.\nالمتبقي: $${rem}.\nالرجاء الدفع في أقرب وقت.`; }
-  else { msg=`مرحبًا ${s.name},\nاشتراكك كامل $${s.price} لم يتم دفعه بعد.\nيرجى الدفع.`; }
-  window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
-}
-
-/* استيراد Excel نهائي */
+// استيراد Excel
 document.getElementById('importFile').addEventListener('change', function(e){
-  const file = e.target.files[0]; 
-  if(!file) return;
-
+  const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
+
   reader.onload = function(evt){
     const data = new Uint8Array(evt.target.result);
-    const workbook = XLSX.read(data, {type:'array'});
+    const workbook = XLSX.read(data,{type:'array'});
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const json = XLSX.utils.sheet_to_json(sheet, {defval:""}); 
+    const json = XLSX.utils.sheet_to_json(sheet,{defval:""});
 
-    let count = 0;
+    let count=0;
+    subscribers=[];
+
     json.forEach(row=>{
-      const cleanRow = {};
-      Object.keys(row).forEach(k=>{
-        const cleanKey = k.replace(/[^\w\u0600-\u06FF]/g,"").trim().toLowerCase();
-        cleanRow[cleanKey] = row[k];
-      });
+      const name = (row["الاسم"]||"").toString().trim();
+      const phone = (row["الهاتف"]||"").toString().trim();
+      const address = (row["العنوان"]||"").toString().trim();
+      const price = Number(row["السعر"]||0);
 
-      const name = cleanRow['الاسم'] || cleanRow['name'];
-      const phone = cleanRow['الهاتف'] || cleanRow['phone'];
-      const address = cleanRow['العنوان'] || cleanRow['address'] || "";
-      const price = cleanRow['السعر'] || cleanRow['price'];
-
-      if(name && phone && price){
-        push(ref(db,"subscribers"),{
-          name: name,
-          phone: phone.toString(),
-          address: address,
-          price: Number(price),
-          payments: []
-        });
+      if(name && phone && price>0){
+        subscribers.push({name, phone, address, price, paid:0});
         count++;
       }
     });
 
-    alert(`تم استيراد ${count} مشترك${count>1?'ين':''} بنجاح!`);
-    e.target.value = "";
     renderTable();
+    alert(`تم استيراد ${count} مشترك${count>1?"ين":""} بنجاح!`);
+    e.target.value="";
   };
+
   reader.readAsArrayBuffer(file);
 });
-
-/* تصدير Excel */
-window.exportToExcel = function() {
-  const dbRef = ref(db,"subscribers");
-  onValue(dbRef, snap=>{
-    const dataFirebase = snap.val();
-    if(!dataFirebase){alert("لا يوجد مشتركين للتصدير!"); return;}
-    const list = Object.entries(dataFirebase).map(([id,sub],i)=>{
-      const payments = sub.payments || [];
-      const paid = payments.reduce((a,p)=>a+Number(p.amount||0),0);
-      const rem = sub.price - paid;
-      let status="غير مدفوع";
-      if(rem===0) status="مدفوع كليًا"; else if(rem<sub.price) status="جزئي";
-      return {
-        "#":i+1,"الاسم":sub.name,"الهاتف":sub.phone,"العنوان":sub.address,
-        "السعر":sub.price,"المدفوع":paid,"المتبقي":rem,"الحالة":status
-      };
-    });
-    const ws = XLSX.utils.json_to_sheet(list);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "المشتركين");
-    XLSX.writeFile(wb, "subscribers.xlsx");
-  }, { onlyOnce:true });
-}
 </script>
 </body>
 </html>
