@@ -180,35 +180,44 @@ window.sendWA = id => {
 
 /* استيراد من Excel */
 document.getElementById('importFile').addEventListener('change', function(e){
-  const file = e.target.files[0]; if(!file) return;
+  const file = e.target.files[0];
+  if(!file) return;
+
   const reader = new FileReader();
   reader.onload = function(evt){
     const data = new Uint8Array(evt.target.result);
     const workbook = XLSX.read(data, {type:'array'});
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet);
+
     console.log("DATA FROM EXCEL:", json);
-    console.log("FIRST ROW KEYS:", Object.keys(json[0]));
-   json.forEach(row=>{
-  if(row.الاسم && row.الهاتف && row.سعر){
-    push(ref(db,"subscribers"),{
-      name: row.الاسم,
-      phone: row.الهاتف.toString(),
-      address: row.العنوان || "",
-      price: Number(row.سعر),
-      payments: []
-    }).catch(err => {
-      console.error("Firebase Error:", err);
-      alert("فشل الحفظ في Firebase");
+
+    json.forEach(row=>{
+      const name = row["الاسم"];
+      const phone = row["الهاتف"];
+      const address = row["العنوان"] || "";
+      const price = row["السعر"];
+
+      if(name && phone && price){
+        push(ref(db,"subscribers"),{
+          name: name,
+          phone: phone.toString(),
+          address: address,
+          price: Number(price),
+          payments: []
+        }).catch(err=>{
+          console.error("Firebase Error:", err);
+        });
+      }
     });
-  }
-});
 
     alert("تم استيراد البيانات بنجاح!");
-    e.target.value="";
+    e.target.value = "";
   };
+
   reader.readAsArrayBuffer(file);
 });
+
 
 /* تصدير إلى Excel */
 window.exportToExcel = function() {
@@ -236,6 +245,7 @@ window.exportToExcel = function() {
 </script>
 </body>
 </html>
+
 
 
 
