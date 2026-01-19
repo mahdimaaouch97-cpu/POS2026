@@ -188,6 +188,7 @@ document.getElementById('importFile').addEventListener('change', function(e){
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet);
     console.log("DATA FROM EXCEL:", json);
+    console.log("FIRST ROW KEYS:", Object.keys(json[0]));
    json.forEach(row=>{
   if(row.الاسم && row.الهاتف && row.سعر){
     push(ref(db,"subscribers"),{
@@ -235,6 +236,7 @@ window.exportToExcel = function() {
 </script>
 </body>
 </html>
+
 
 
 
