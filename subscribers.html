@@ -41,6 +41,10 @@ th { background:#007bff; color:white; }
   <button class="home-btn" onclick="document.getElementById('importFile').click()">استيراد من Excel</button>
   <button class="home-btn" onclick="exportToExcel()">تصدير إلى Excel</button>
 </div>
+  <button onclick="testFirebase()" style="margin:10px; padding:10px;">
+  اختبار Firebase
+</button>
+
 
 <div class="search-filter">
   <input id="search" placeholder="بحث..." onkeyup="renderTable()">
@@ -88,6 +92,21 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+  window.testFirebase = function(){
+  push(ref(db,"subscribers"),{
+    name:"اختبار",
+    phone:"000000",
+    address:"test",
+    price:10,
+    payments:[]
+  }).then(()=>{
+    alert("Firebase يعمل ✅");
+  }).catch(err=>{
+    alert("Firebase لا يعمل ❌");
+    console.error(err);
+  });
+}
+
 
 const nameInput = document.getElementById("name");
 const phoneInput = document.getElementById("phone");
@@ -231,6 +250,7 @@ window.exportToExcel = function() {
 </script>
 </body>
 </html>
+
 
 
 
