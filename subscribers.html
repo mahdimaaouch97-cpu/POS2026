@@ -20,7 +20,7 @@ h1 {
   text-shadow:1px 1px 2px #ccc;
 }
 
-/* ===== شريط الأزرار مرتب ===== */
+/* ===== شريط الأزرار ===== */
 .top-buttons {
   display:flex;
   flex-wrap:wrap;
@@ -155,13 +155,11 @@ th { background:#007bff; color:white; }
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-
 <body>
 
 <h1>إدارة المشتركين</h1>
 
 <div class="top-buttons">
-
   <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
   <button class="payments-btn" onclick="location.href='payments.html'">الدفع</button>
   <button class="import-btn" onclick="document.getElementById('importFile').click()">استيراد Excel</button>
@@ -245,17 +243,19 @@ onValue(ref(db,"subscribers"), snap=>{
 });
 
 window.renderTable = ()=>{
-  const s = search.value.toLowerCase();
+  const s = search.value.toLowerCase().replace(/\s+/g,'');
   const f = filterStatus.value;
   tableBody.innerHTML="";
   const filtered = subscribers
     .filter(sub=>{
       const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
       const rem = sub.price-paid;
-      let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
-      return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
+      let st = rem===0?'full':rem<sub.price?'partial':'unpaid';
+      const nameCheck = sub.name.toLowerCase().replace(/\s+/g,'').includes(s);
+      return (f=="all"||f==st)&&(nameCheck||sub.phone.includes(s));
     })
     .sort((a,b)=>a.id-b.id);
+
   filtered.forEach(sub=>{
     const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
     const rem = sub.price-paid;
@@ -281,7 +281,7 @@ window.renderTable = ()=>{
   });
 }
 
-/* إضافة مشترك */
+// إضافة مشترك
 addBtn.onclick = ()=>{
   if(!nameInput.value){ alert("الاسم مطلوب"); return; }
   push(ref(db,"subscribers"),{
@@ -295,7 +295,7 @@ addBtn.onclick = ()=>{
   toggleAddForm();
 }
 
-/* ===== التعديل ===== */
+// تعديل مشترك
 window.startEdit = (btn)=>{
   const row = btn.closest("tr");
   if(row.classList.contains("editing-row")) return;
@@ -344,10 +344,10 @@ window.cancelEdit = (btn,originalData)=>{
   `;
 }
 
-/* حذف */
+// حذف مشترك
 window.del=id=>confirm("تأكيد الحذف؟")&&remove(ref(db,"subscribers/"+id));
 
-/* واتساب */
+// واتساب
 window.sendWA=id=>{
   const s = subscribers.find(x=>x.fid==id);
   if(!s.phone.startsWith("+")) s.phone = "+961"+s.phone;
@@ -363,7 +363,7 @@ window.sendWA=id=>{
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
 
-/* استيراد Excel */
+// استيراد Excel
 document.getElementById('importFile').addEventListener('change',function(e){
   const file = e.target.files[0];
   if(!file) return;
@@ -387,7 +387,7 @@ document.getElementById('importFile').addEventListener('change',function(e){
   reader.readAsArrayBuffer(file);
 });
 
-/* تصدير Excel */
+// تصدير Excel
 window.exportToExcel = ()=>{
   const dbRef = ref(db,"subscribers");
   onValue(dbRef,snap=>{
