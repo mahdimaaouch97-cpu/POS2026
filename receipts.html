@@ -60,7 +60,7 @@ th { background:#007bff; color:#fff;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 Firebase */
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
   authDomain: "pos2026-310b7.firebaseapp.com",
@@ -78,37 +78,24 @@ const tableBody = document.getElementById("receiptsTableBody");
 const searchInput = document.getElementById("search");
 const filterSelect = document.getElementById("filterStatus");
 
-let subscribers = [];
 let receipts = [];
-let lastReceiptNumber = 5000; // البداية من 5001
 
-// تحميل المشتركين من Firebase
+// تحميل المشتركين وإنشاء الإيصالات
 onValue(ref(db, "subscribers"), snap => {
     const data = snap.val() || {};
-    subscribers = Object.entries(data).map(([fid, sub], i) => ({
-        fid,
-        id: i+1,
-        name: sub.name || "بدون اسم",
-        phone: sub.phone || "غير محدد",
-        address: sub.address || "غير محدد",
-        price: Number(sub.price || 0),
-        payments: Array.isArray(sub.payments) ? sub.payments : []
-    }));
-
-    // إنشاء الإيصالات لكل دفعة
     receipts = [];
-    subscribers.forEach(sub => {
+
+    Object.values(data).forEach(sub => {
+        if(!sub.payments) return;
         sub.payments.forEach(p => {
-            lastReceiptNumber++;
             const totalPaid = sub.payments.slice(0, sub.payments.indexOf(p)+1)
                                  .reduce((a,b)=>a+b.amount,0);
             const remaining = +(sub.price - totalPaid).toFixed(2);
             receipts.push({
-                id: lastReceiptNumber,
-                subscriberId: sub.id,
-                name: sub.name,
-                address: sub.address,
-                total: sub.price,
+                receiptNumber: p.receiptNumber || '-',
+                name: sub.name || "بدون اسم",
+                address: sub.address || "غير محدد",
+                total: Number(sub.price || 0),
                 amount: p.amount,
                 remaining: remaining,
                 month: p.month,
@@ -120,7 +107,6 @@ onValue(ref(db, "subscribers"), snap => {
     renderTable();
 });
 
-// عرض الجدول
 function renderTable() {
     const search = searchInput.value.toLowerCase();
     const filter = filterSelect.value;
@@ -147,7 +133,7 @@ function renderTable() {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${r.id}</td>
+            <td>${r.receiptNumber}</td>
             <td>${r.name}</td>
             <td>$${r.total}</td>
             <td>$${r.amount}</td>
@@ -163,13 +149,13 @@ function renderTable() {
             win.document.write(`
             <div style="font-family:Arial;direction:rtl;width:200px;padding:5px;text-align:right;font-size:12px;">
                 <h3 style="text-align:center;margin:0;">FAST NET</h3>
-                 <p style="text-align:center; margin:2px 0; font-size:12px;">71-338640   📞  71-346411</p>
+                <p style="text-align:center; margin:2px 0; font-size:12px;">71-338640   📞  71-346411</p>
                 <hr>
                 <table style="width:100%;border-collapse:collapse;font-size:12px;direction:rtl;">
-                    <tr><td>رقم الإيصال:</td><td>${r.id}</td></tr>
+                    <tr><td>رقم الإيصال:</td><td>${r.receiptNumber}</td></tr>
                     <tr><td>المشترك:</td><td>${r.name}</td></tr>
                     <tr><td>العنوان:</td><td>${r.address}</td></tr>
-                    <tr><td>سعرالإشتراك:</td><td>$${r.total}</td></tr>
+                    <tr><td>سعر الاشتراك:</td><td>$${r.total}</td></tr>
                     <tr><td>المدفوع:</td><td>$${r.amount}</td></tr>
                     <tr><td>المتبقي:</td><td>$${r.remaining}</td></tr>
                     <tr><td>الشهر:</td><td>${r.month}</td></tr>
@@ -177,7 +163,6 @@ function renderTable() {
                     <tr><td>تاريخ الدفع:</td><td>${r.date}</td></tr>
                 </table>
                 <hr>
-                <p style="text-align:center;font-weight:bold;font-size:12px;"></p>
             </div>
             `);
             win.print();
@@ -187,15 +172,8 @@ function renderTable() {
     });
 }
 
-// أحداث البحث والفلاتر
 searchInput.addEventListener("input", renderTable);
 filterSelect.addEventListener("change", renderTable);
-
-// زر الرجوع مضمون 100%
-function goHome(){
-    window.location.href = "https://mahdimaaouch97-cpu.github.io/";
-}
 </script>
-
 </body>
 </html>
