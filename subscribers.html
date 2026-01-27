@@ -19,8 +19,6 @@ h1 {
   color:#222;
   text-shadow:1px 1px 2px #ccc;
 }
-
-/* ===== شريط الأزرار مرتب ===== */
 .top-buttons {
   display:flex;
   flex-wrap:wrap;
@@ -44,7 +42,6 @@ h1 {
 .top-buttons .import-btn { background-color:#17a2b8; color:white; }
 .top-buttons .export-btn { background-color:#ffc107; color:#222; }
 
-/* ===== نموذج إضافة مشترك ===== */
 .add-form {
   max-width:600px;
   margin:20px auto;
@@ -74,7 +71,6 @@ h1 {
   box-shadow:0 0 5px rgba(0,123,255,0.3);
   outline:none;
 }
-
 .add-form button#addBtn {
   width:100%;
   padding:16px;
@@ -88,7 +84,6 @@ h1 {
   transition:0.3s;
 }
 .add-form button#addBtn:hover { background:#0056b3; }
-
 .add-form .close-btn {
   position:absolute;
   top:12px;
@@ -104,7 +99,6 @@ h1 {
   cursor:pointer;
 }
 
-/* ===== شريط البحث ===== */
 .search-filter {
   max-width:450px;
   margin:0 auto 20px;
@@ -119,7 +113,6 @@ h1 {
   font-size:18px;
 }
 
-/* ===== الجدول ===== */
 table {
   width:100%;
   border-collapse:collapse;
@@ -144,7 +137,6 @@ th { background:#007bff; color:white; }
 .save-btn { background:#28a745; color:white; }
 .cancel-btn { background:#ffc107; color:#222; }
 
-/* ===== تجاوب الهاتف ===== */
 @media(max-width:768px){
   .top-buttons { flex-direction:column; gap:8px; }
   .search-filter { flex-direction:column; gap:8px; }
@@ -155,13 +147,11 @@ th { background:#007bff; color:white; }
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-
 <body>
 
 <h1>إدارة المشتركين</h1>
 
 <div class="top-buttons">
-
   <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
   <button class="payments-btn" onclick="location.href='payments.html'">الدفع</button>
   <button class="import-btn" onclick="document.getElementById('importFile').click()">استيراد Excel</button>
@@ -225,44 +215,53 @@ const filterStatus = document.getElementById("filterStatus");
 
 let subscribers = [];
 
-window.toggleAddForm = ()=>{
+window.toggleAddForm = () => {
   addForm.classList.toggle("show");
   if(addForm.classList.contains("show")) addForm.scrollIntoView({behavior:"smooth"});
 }
 
-onValue(ref(db,"subscribers"), snap=>{
-  const data = snap.val()||{};
-  subscribers = Object.entries(data).map(([id,sub],i)=>({
+onValue(ref(db,"subscribers"), snap => {
+  const data = snap.val() || {};
+  subscribers = Object.entries(data).map(([id, sub], i) => ({
     fid:id,
     id:i+1,
-    name: sub.name||"",
-    phone: sub.phone||"",
-    address: sub.address||"",
-    price:Number(sub.price||0),
-    payments: sub.payments||[]
+    name: sub.name || "",
+    phone: sub.phone || "",
+    address: sub.address || "",
+    price: Number(sub.price || 0),
+    payments: sub.payments || []
   }));
   renderTable();
 });
 
-window.renderTable = ()=>{
-  const s = search.value.toLowerCase();
+window.renderTable = () => {
+  const s = search.value.trim().toLowerCase();
   const f = filterStatus.value;
-  tableBody.innerHTML="";
+  tableBody.innerHTML = "";
+
   const filtered = subscribers
-    .filter(sub=>{
-      const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
-      const rem = sub.price-paid;
-      let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
-      return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
+    .filter(sub => {
+      const paid = (sub.payments || []).reduce((a,p) => a + Number(p.amount || 0), 0);
+      const rem = sub.price - paid;
+      let st = "unpaid";
+      if(rem === 0) st = "full";
+      else if(rem < sub.price) st = "partial";
+
+      const nameMatch = sub.name?.trim().toLowerCase().includes(s);
+      const phoneMatch = sub.phone?.toString().trim().includes(s);
+
+      return (f === "all" || f === st) && (nameMatch || phoneMatch);
     })
-    .sort((a,b)=>a.id-b.id);
-  filtered.forEach(sub=>{
-    const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
-    const rem = sub.price-paid;
-    let txt="غير مدفوع",cls="status-unpaid";
-    if(rem===0){txt="مدفوع كليًا";cls="status-full";}
-    else if(rem<sub.price){txt="جزئي";cls="status-partial";}
-    tableBody.innerHTML+=`
+    .sort((a,b) => a.id - b.id);
+
+  filtered.forEach(sub => {
+    const paid = (sub.payments || []).reduce((a,p) => a + Number(p.amount || 0), 0);
+    const rem = sub.price - paid;
+    let txt = "غير مدفوع", cls = "status-unpaid";
+    if(rem === 0){ txt="مدفوع كليًا"; cls="status-full"; }
+    else if(rem < sub.price){ txt="جزئي"; cls="status-partial"; }
+
+    tableBody.innerHTML += `
 <tr data-id="${sub.fid}">
 <td>${sub.id}</td>
 <td class="field name">${sub.name}</td>
@@ -282,76 +281,74 @@ window.renderTable = ()=>{
 }
 
 /* إضافة مشترك */
-addBtn.onclick = ()=>{
+addBtn.onclick = () => {
   if(!nameInput.value){ alert("الاسم مطلوب"); return; }
   push(ref(db,"subscribers"),{
-    name:nameInput.value,
+    name: nameInput.value,
     phone: phoneInput.value || "",
     address: addressInput.value || "",
     price: priceInput.value ? Number(priceInput.value) : 0,
-    payments:[]
+    payments: []
   });
-  nameInput.value=phoneInput.value=addressInput.value=priceInput.value="";
+  nameInput.value = phoneInput.value = addressInput.value = priceInput.value = "";
   toggleAddForm();
 }
 
-/* ===== التعديل ===== */
-window.startEdit = (btn)=>{
+/* تعديل */
+window.startEdit = (btn) => {
   const row = btn.closest("tr");
   if(row.classList.contains("editing-row")) return;
   row.classList.add("editing-row");
   const fields = ["name","phone","address","price"];
   const originalData = {};
-  fields.forEach(f=>{
+  fields.forEach(f => {
     const cell = row.querySelector(`.field.${f}`);
     originalData[f] = cell.textContent;
     const input = document.createElement("input");
     input.value = cell.textContent;
     if(f==="price") input.type="number";
-    cell.textContent="";
+    cell.textContent = "";
     cell.appendChild(input);
   });
   row.querySelector("td:last-child").innerHTML = `
-    <button class="save-btn" onclick="saveEdit(this)">حفظ</button>
-    <button class="cancel-btn" onclick='cancelEdit(this,${JSON.stringify(originalData)})'>إلغاء</button>
-  `;
+<button class="save-btn" onclick="saveEdit(this)">حفظ</button>
+<button class="cancel-btn" onclick='cancelEdit(this,${JSON.stringify(originalData)})'>إلغاء</button>`;
 }
 
-window.saveEdit = (btn)=>{
+window.saveEdit = (btn) => {
   const row = btn.closest("tr");
   const fid = row.dataset.id;
   const updateData = {};
-  ["name","phone","address","price"].forEach(f=>{
+  ["name","phone","address","price"].forEach(f => {
     const input = row.querySelector(`.field.${f} input`);
-    updateData[f] = (f==="price")? Number(input.value): input.value;
+    updateData[f] = (f==="price")? Number(input.value) : input.value;
   });
-  update(ref(db,"subscribers/"+fid), updateData).then(()=>{
+  update(ref(db,"subscribers/"+fid), updateData).then(() => {
     row.classList.remove("editing-row");
     renderTable();
   });
 }
 
-window.cancelEdit = (btn,originalData)=>{
+window.cancelEdit = (btn, originalData) => {
   const row = btn.closest("tr");
-  ["name","phone","address","price"].forEach(f=>{
+  ["name","phone","address","price"].forEach(f => {
     const cell = row.querySelector(`.field.${f}`);
     cell.textContent = originalData[f];
   });
   row.classList.remove("editing-row");
   row.querySelector("td:last-child").innerHTML = `
-    <button class="edit-btn" onclick="startEdit(this)">تعديل</button>
-    <button class="delete-btn" onclick="del('${row.dataset.id}')">حذف</button>
-  `;
+<button class="edit-btn" onclick="startEdit(this)">تعديل</button>
+<button class="delete-btn" onclick="del('${row.dataset.id}')">حذف</button>`;
 }
 
 /* حذف */
-window.del=id=>confirm("تأكيد الحذف؟")&&remove(ref(db,"subscribers/"+id));
+window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
 
 /* واتساب */
-window.sendWA=id=>{
-  const s = subscribers.find(x=>x.fid==id);
+window.sendWA = id => {
+  const s = subscribers.find(x => x.fid==id);
   if(!s.phone.startsWith("+")) s.phone = "+961"+s.phone;
-  const paid = (s.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
+  const paid = (s.payments || []).reduce((a,p) => a+Number(p.amount||0),0);
   const rem = s.price-paid;
   let msg = `السيد/ة ${s.name} المحترم/ة،\n`;
   if(rem===0){ alert(`${s.name} دفع كامل المبلغ بالفعل!`); return; }
@@ -364,7 +361,7 @@ window.sendWA=id=>{
 }
 
 /* استيراد Excel */
-document.getElementById('importFile').addEventListener('change',function(e){
+document.getElementById('importFile').addEventListener('change', function(e){
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -379,7 +376,7 @@ document.getElementById('importFile').addEventListener('change',function(e){
       const address = row["العنوان"]||"";
       const price = row["السعر"] ? Number(row["السعر"]) : 0;
       if(!name) return;
-      push(ref(db,"subscribers"),{name,phone,address,price,payments:[]});
+      push(ref(db,"subscribers"), {name, phone, address, price, payments: []});
     });
     alert("تم استيراد البيانات بنجاح!");
     e.target.value="";
@@ -388,17 +385,18 @@ document.getElementById('importFile').addEventListener('change',function(e){
 });
 
 /* تصدير Excel */
-window.exportToExcel = ()=>{
+window.exportToExcel = () => {
   const dbRef = ref(db,"subscribers");
-  onValue(dbRef,snap=>{
+  onValue(dbRef, snap => {
     const dataFirebase = snap.val();
-    if(!dataFirebase){alert("لا يوجد مشتركين للتصدير!"); return;}
+    if(!dataFirebase){ alert("لا يوجد مشتركين للتصدير!"); return; }
     const list = Object.entries(dataFirebase).map(([id,sub],i)=>{
       const payments = sub.payments||[];
       const paid = payments.reduce((a,p)=>a+Number(p.amount||0),0);
       const rem = sub.price-paid;
       let status="غير مدفوع";
-      if(rem===0) status="مدفوع كليًا"; else if(rem<sub.price) status="جزئي";
+      if(rem===0) status="مدفوع كليًا";
+      else if(rem<sub.price) status="جزئي";
       return {"#":i+1,"الاسم":sub.name,"الهاتف":sub.phone,"العنوان":sub.address,"السعر":sub.price,"المدفوع":paid,"المتبقي":rem,"الحالة":status};
     });
     const ws = XLSX.utils.json_to_sheet(list);
@@ -408,6 +406,5 @@ window.exportToExcel = ()=>{
   }, { onlyOnce:true });
 }
 </script>
-
 </body>
 </html>
