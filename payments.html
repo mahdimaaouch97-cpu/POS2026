@@ -52,7 +52,7 @@ h1 {
     border-radius:6px; 
     border:1px solid #bbb; 
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-    font-size: 16px; /* تكبير النصوص في البحث */
+    font-size: 16px; 
 }
 
 /* ===== الجدول ===== */
@@ -69,24 +69,24 @@ th, td {
     padding:12px 10px; 
     border:1px solid #ddd; 
     text-align:center; 
-    font-size:20px; /* تكبير النصوص داخل الجدول */
+    font-size:20px; 
 }
 th { 
     background-color:#007bff; 
     color:white; 
     font-weight:600;
-    font-size:17px; /* تكبير عناوين الجدول */
+    font-size:17px; 
 }
 td { background:white; }
 
 /* ===== أزرار العمليات ===== */
 button { 
-    padding:8px 14px; /* تكبير الأزرار */
+    padding:8px 14px; 
     cursor:pointer; 
     margin:2px; 
     border-radius:6px; 
     border:none; 
-    font-size:15px; /* تكبير النص داخل الأزرار */
+    font-size:15px; 
     font-weight:bold;
     transition:0.2s all;
 }
@@ -102,7 +102,7 @@ button:hover { opacity:0.85; transform:translateY(-1px); }
     color: white; 
     font-weight: bold; 
     border-radius: 10px; 
-    padding: 8px 14px; /* تكبير الحالة */
+    padding: 8px 14px; 
     display:inline-block;
 }
 .status-partial { 
@@ -205,7 +205,7 @@ const filterStatus = document.getElementById("filterStatus");
 let subscribers = [];
 
 function renderTable(){
-    const searchFilter = searchInput.value.toLowerCase().trim();
+    const searchFilter = searchInput.value.toLowerCase();
     const statusFilterValue = filterStatus.value;
     tableBody.innerHTML = "";
 
@@ -216,28 +216,29 @@ function renderTable(){
 
         if(!(statusFilterValue==="all" || status===statusFilterValue)) return;
 
-        // ===== تعديل البحث =====
-        const nameMatch = sub.name.toLowerCase().includes(searchFilter);
-        const phoneMatch = sub.phone.toString().toLowerCase().includes(searchFilter);
-        if(!(nameMatch || phoneMatch)) return;
+        // تحقق من البحث في جميع الأعمدة
+        const searchMatch = [sub.name, sub.phone, sub.address, sub.price].some(field =>
+            field.toString().toLowerCase().includes(searchFilter)
+        );
+        if(!searchMatch) return;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${sub.id}</td>
-            <td>${sub.name}</td>
-            <td>${sub.phone}</td>
-            <td>${sub.address}</td>
-            <td>$${sub.price}</td>
-            <td>$${paid.toFixed(2)}</td>
-            <td>$${remaining}</td>
-            <td class="status-cell"></td>
-            <td><select class="month-select">${[...Array(12)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}</select></td>
-            <td>
+            <td data-label="#">${sub.id}</td>
+            <td data-label="الاسم">${sub.name}</td>
+            <td data-label="الهاتف">${sub.phone}</td>
+            <td data-label="العنوان">${sub.address}</td>
+            <td data-label="سعر الإشتراك">$${sub.price}</td>
+            <td data-label="المدفوع">$${paid.toFixed(2)}</td>
+            <td data-label="المتبقي">$${remaining}</td>
+            <td data-label="حالة الدفع" class="status-cell"></td>
+            <td data-label="الشهر"><select class="month-select">${[...Array(12)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}</select></td>
+            <td data-label="دفع">
                 <input type="number" class="pay-input" min="0.01" max="${remaining}" step="0.01" ${remaining===0?"disabled":""}>
                 <button class="pay-btn" ${remaining===0?"disabled":""}>دفع</button>
             </td>
-            <td><button class="print-btn">طباعة</button></td>
-            <td><button class="wa-btn">واتساب</button></td>
+            <td data-label="طباعة"><button class="print-btn">طباعة</button></td>
+            <td data-label="واتساب"><button class="wa-btn">واتساب</button></td>
         `;
 
         const statusCell = tr.querySelector(".status-cell");
