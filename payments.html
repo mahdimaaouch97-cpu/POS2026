@@ -205,7 +205,7 @@ const filterStatus = document.getElementById("filterStatus");
 let subscribers = [];
 
 function renderTable(){
-    const searchFilter = searchInput.value.toLowerCase();
+    const searchFilter = searchInput.value.toLowerCase().trim();
     const statusFilterValue = filterStatus.value;
     tableBody.innerHTML = "";
 
@@ -215,7 +215,11 @@ function renderTable(){
         const status = remaining===0 ? "full" : (remaining<sub.price ? "partial" : "unpaid");
 
         if(!(statusFilterValue==="all" || status===statusFilterValue)) return;
-        if(!(sub.name.toLowerCase().includes(searchFilter) || sub.phone.includes(searchFilter))) return;
+
+        // ===== تعديل البحث =====
+        const nameMatch = sub.name.toLowerCase().includes(searchFilter);
+        const phoneMatch = sub.phone.toString().toLowerCase().includes(searchFilter);
+        if(!(nameMatch || phoneMatch)) return;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
