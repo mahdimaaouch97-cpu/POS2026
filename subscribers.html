@@ -20,7 +20,7 @@ h1 {
   text-shadow:1px 1px 2px #ccc;
 }
 
-/* ===== شريط الأزرار ===== */
+/* ===== شريط الأزرار مرتب ===== */
 .top-buttons {
   display:flex;
   flex-wrap:wrap;
@@ -161,6 +161,7 @@ th { background:#007bff; color:white; }
 <h1>إدارة المشتركين</h1>
 
 <div class="top-buttons">
+
   <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
   <button class="payments-btn" onclick="location.href='payments.html'">الدفع</button>
   <button class="import-btn" onclick="document.getElementById('importFile').click()">استيراد Excel</button>
@@ -224,20 +225,13 @@ const filterStatus = document.getElementById("filterStatus");
 
 let subscribers = [];
 
-window.toggleAddForm = ()=> {
+window.toggleAddForm = ()=>{
   addForm.classList.toggle("show");
   if(addForm.classList.contains("show")) addForm.scrollIntoView({behavior:"smooth"});
 }
 
-// تحميل المشتركين من Firebase
 onValue(ref(db,"subscribers"), snap=>{
-  const data = snap.val();
-  console.log("Data from Firebase:", data); // تحقق من البيانات
-  if(!data){
-    tableBody.innerHTML = "<tr><td colspan='10'>لا يوجد مشتركين</td></tr>";
-    subscribers = [];
-    return;
-  }
+  const data = snap.val()||{};
   subscribers = Object.entries(data).map(([id,sub],i)=>({
     fid:id,
     id:i+1,
@@ -251,7 +245,7 @@ onValue(ref(db,"subscribers"), snap=>{
 });
 
 window.renderTable = ()=>{
-  const s = search.value.trim().toLowerCase();
+  const s = search.value.toLowerCase();
   const f = filterStatus.value;
   tableBody.innerHTML="";
   const filtered = subscribers
@@ -259,25 +253,15 @@ window.renderTable = ()=>{
       const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
       const rem = sub.price-paid;
       let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
-
-      const nameMatch = sub.name?.trim().toLowerCase().includes(s);
-      const phoneMatch = sub.phone?.trim()?.includes(s);
-      return (f=="all" || f==st) && (nameMatch || phoneMatch);
+      return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
     })
     .sort((a,b)=>a.id-b.id);
-
-  if(filtered.length===0){
-    tableBody.innerHTML = "<tr><td colspan='10'>لا يوجد مشتركين مطابقين للبحث</td></tr>";
-    return;
-  }
-
   filtered.forEach(sub=>{
     const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
     const rem = sub.price-paid;
     let txt="غير مدفوع",cls="status-unpaid";
     if(rem===0){txt="مدفوع كليًا";cls="status-full";}
     else if(rem<sub.price){txt="جزئي";cls="status-partial";}
-
     tableBody.innerHTML+=`
 <tr data-id="${sub.fid}">
 <td>${sub.id}</td>
@@ -285,8 +269,8 @@ window.renderTable = ()=>{
 <td class="field phone">${sub.phone}</td>
 <td class="field address">${sub.address}</td>
 <td class="field price">${sub.price}</td>
-<td>${paid}</td>
-<td>${rem}</td>
+<td>$${paid}</td>
+<td>$${rem}</td>
 <td class="${cls}">${txt}</td>
 <td>${rem>0?`<button class="reminder-btn" onclick="sendWA('${sub.fid}')">واتساب</button>`:"✔"}</td>
 <td>
@@ -297,7 +281,7 @@ window.renderTable = ()=>{
   });
 }
 
-// إضافة مشترك جديد
+/* إضافة مشترك */
 addBtn.onclick = ()=>{
   if(!nameInput.value){ alert("الاسم مطلوب"); return; }
   push(ref(db,"subscribers"),{
@@ -311,7 +295,7 @@ addBtn.onclick = ()=>{
   toggleAddForm();
 }
 
-// تعديل وحذف وواتساب تبقى كما في الكود الأصلي
+/* ===== التعديل ===== */
 window.startEdit = (btn)=>{
   const row = btn.closest("tr");
   if(row.classList.contains("editing-row")) return;
@@ -360,11 +344,12 @@ window.cancelEdit = (btn,originalData)=>{
   `;
 }
 
+/* حذف */
 window.del=id=>confirm("تأكيد الحذف؟")&&remove(ref(db,"subscribers/"+id));
 
+/* واتساب */
 window.sendWA=id=>{
   const s = subscribers.find(x=>x.fid==id);
-  if(!s) return;
   if(!s.phone.startsWith("+")) s.phone = "+961"+s.phone;
   const paid = (s.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
   const rem = s.price-paid;
@@ -378,7 +363,7 @@ window.sendWA=id=>{
   window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}`);
 }
 
-// استيراد Excel
+/* استيراد Excel */
 document.getElementById('importFile').addEventListener('change',function(e){
   const file = e.target.files[0];
   if(!file) return;
@@ -402,7 +387,7 @@ document.getElementById('importFile').addEventListener('change',function(e){
   reader.readAsArrayBuffer(file);
 });
 
-// تصدير Excel
+/* تصدير Excel */
 window.exportToExcel = ()=>{
   const dbRef = ref(db,"subscribers");
   onValue(dbRef,snap=>{
