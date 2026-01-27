@@ -209,6 +209,8 @@ function renderTable(){
     const statusFilterValue = filterStatus.value;
     tableBody.innerHTML = "";
 
+    const currentMonth = new Date().getMonth() + 1; // الشهر الحالي 1-12
+
     subscribers.forEach(sub => {
         const paid = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0);
         const remaining = +(sub.price - paid).toFixed(2);
@@ -232,7 +234,11 @@ function renderTable(){
             <td data-label="المدفوع">$${paid.toFixed(2)}</td>
             <td data-label="المتبقي">$${remaining}</td>
             <td data-label="حالة الدفع" class="status-cell"></td>
-            <td data-label="الشهر"><select class="month-select">${[...Array(12)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}</select></td>
+            <td data-label="الشهر">
+                <select class="month-select">
+                    ${[...Array(12)].map((_,i)=>`<option value="${i+1}" ${i+1===currentMonth ? "selected" : ""}>${i+1}</option>`).join("")}
+                </select>
+            </td>
             <td data-label="دفع">
                 <input type="number" class="pay-input" min="0.01" max="${remaining}" step="0.01" ${remaining===0?"disabled":""}>
                 <button class="pay-btn" ${remaining===0?"disabled":""}>دفع</button>
@@ -287,7 +293,7 @@ function renderTable(){
         });
 
         const printBtn = tr.querySelector(".print-btn");
-        printBtn.addEventListener("click", ()=>{
+        printBtn.addEventListener("click", ()=>{ 
             if(sub.payments.length===0) return alert("لا توجد دفعات");
             const last = sub.payments[sub.payments.length-1];
             const totalPaid = sub.payments.reduce((sum,p)=>sum+Number(p.amount||0),0);
