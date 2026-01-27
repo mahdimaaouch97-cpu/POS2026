@@ -6,29 +6,151 @@
 <title>إدارة المشتركين - POSNEW</title>
 
 <style>
-body { font-family: Arial, sans-serif; padding:20px; background:#f5f5f5; direction:rtl; }
-h1 { text-align:center; margin-bottom:15px; color:#333; }
-.top-buttons { text-align:center; margin-bottom:20px; }
-.top-buttons button { margin:5px; padding:10px 16px; font-weight:bold; border-radius:5px; border:none; cursor:pointer; }
-.home-btn { background-color:#007bff; color:white; }
-.search-filter { max-width:400px; margin:0 auto 15px; display:flex; gap:10px; }
-.search-filter input, select { flex:1; padding:8px; }
-.add-form { max-width:500px; margin:0 auto 15px; background:#fff; padding:15px; border-radius:8px; }
-.add-form input { width:100%; padding:8px; margin-bottom:10px; }
-.add-form button { width:100%; padding:10px; background:#007bff; color:white; border:none; cursor:pointer; }
-table { width:100%; border-collapse:collapse; background:white; }
-th, td { padding:10px; border:1px solid #ddd; text-align:center; }
+body {
+  font-family: Arial, sans-serif;
+  padding:20px;
+  background:#f0f2f5;
+  direction:rtl;
+  color:#333;
+}
+h1 {
+  text-align:center;
+  margin-bottom:20px;
+  color:#222;
+  text-shadow:1px 1px 2px #ccc;
+}
+
+/* ===== شريط الأزرار مرتب ===== */
+.top-buttons {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:25px;
+}
+.top-buttons button {
+  padding:14px 22px;
+  font-size:17px;
+  font-weight:bold;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  transition:0.3s;
+  min-width:120px;
+}
+.top-buttons button:hover { opacity:0.85; }
+.top-buttons .home-btn { background-color:#007bff; color:white; }
+.top-buttons .payments-btn { background-color:#28a745; color:white; }
+.top-buttons .import-btn { background-color:#17a2b8; color:white; }
+.top-buttons .export-btn { background-color:#ffc107; color:#222; }
+
+/* ===== نموذج إضافة مشترك ===== */
+.add-form {
+  max-width:600px;
+  margin:20px auto;
+  background:#fff;
+  padding:30px 25px;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+  display:none;
+  position:relative;
+  transition: all 0.3s ease-in-out;
+}
+.add-form.show { display:block; animation:fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
+
+.add-form input {
+  width:100%;
+  padding:14px 15px;
+  margin-bottom:15px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:18px;
+  box-sizing:border-box;
+  transition:0.2s;
+}
+.add-form input:focus {
+  border-color:#007bff;
+  box-shadow:0 0 5px rgba(0,123,255,0.3);
+  outline:none;
+}
+
+.add-form button#addBtn {
+  width:100%;
+  padding:16px;
+  font-size:18px;
+  background:#007bff;
+  color:white;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+.add-form button#addBtn:hover { background:#0056b3; }
+
+.add-form .close-btn {
+  position:absolute;
+  top:12px;
+  left:12px;
+  background:#dc3545;
+  color:white;
+  border:none;
+  border-radius:50%;
+  width:30px;
+  height:30px;
+  font-weight:bold;
+  font-size:18px;
+  cursor:pointer;
+}
+
+/* ===== شريط البحث ===== */
+.search-filter {
+  max-width:450px;
+  margin:0 auto 20px;
+  display:flex;
+  gap:10px;
+}
+.search-filter input, select {
+  flex:1;
+  padding:12px 14px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:18px;
+}
+
+/* ===== الجدول ===== */
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+th, td {
+  padding:12px;
+  border:1px solid #ddd;
+  text-align:center;
+  font-size:20px;
+}
 th { background:#007bff; color:white; }
-.delete-btn { background:#dc3545; color:white; padding:5px 8px; border:none; cursor:pointer; border-radius:3px; }
-.reminder-btn { background:#25D366; color:white; padding:5px 8px; border:none; cursor:pointer; border-radius:3px; }
-.status-full { background:#388e3c; color:white; }
-.status-partial { background:#f57c00; color:white; }
-.status-unpaid { background:#c62828; color:white; }
-.editing-row { background-color: #fff3b0 !important; }
-.edit-btn, .save-btn, .cancel-btn { padding:3px 6px; border:none; border-radius:3px; cursor:pointer; }
+.delete-btn { background:#dc3545; color:white; padding:6px 10px; border:none; border-radius:4px; cursor:pointer; }
+.reminder-btn { background:#25D366; color:white; padding:6px 10px; border:none; border-radius:4px; cursor:pointer; }
+.status-full { background:#388e3c; color:white; padding:5px 8px; border-radius:4px; }
+.status-partial { background:#f57c00; color:white; padding:5px 8px; border-radius:4px; }
+.status-unpaid { background:#c62828; color:white; padding:5px 8px; border-radius:4px; }
+.editing-row { background-color:#fff3b0 !important; }
+.edit-btn, .save-btn, .cancel-btn { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:0.85em; }
 .edit-btn { background:#007bff; color:white; }
 .save-btn { background:#28a745; color:white; }
-.cancel-btn { background:#ffc107; color:white; }
+.cancel-btn { background:#ffc107; color:#222; }
+
+/* ===== تجاوب الهاتف ===== */
+@media(max-width:768px){
+  .top-buttons { flex-direction:column; gap:8px; }
+  .search-filter { flex-direction:column; gap:8px; }
+  .add-form { width:95%; padding:20px; }
+  th, td { font-size:0.85em; padding:8px; }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -39,15 +161,17 @@ th { background:#007bff; color:white; }
 <h1>إدارة المشتركين</h1>
 
 <div class="top-buttons">
+
   <button class="home-btn" onclick="location.href='index.html'">الرئيسية</button>
-  <button class="home-btn" onclick="location.href='payments.html'">الدفع</button>
-  <input type="file" id="importFile" style="display:none" accept=".xlsx,.xls">
-  <button class="home-btn" onclick="document.getElementById('importFile').click()">استيراد من Excel</button>
-  <button class="home-btn" onclick="exportToExcel()">تصدير إلى Excel</button>
+  <button class="payments-btn" onclick="location.href='payments.html'">الدفع</button>
+  <button class="import-btn" onclick="document.getElementById('importFile').click()">استيراد Excel</button>
+  <button class="export-btn" onclick="exportToExcel()">تصدير Excel</button>
+  <input type="file" id="importFile" hidden accept=".xlsx,.xls">
+  <button class="home-btn" onclick="toggleAddForm()">➕ إضافة مشترك</button>
 </div>
 
-<!-- إضافة مشترك -->
-<div class="add-form">
+<div class="add-form" id="addForm">
+  <button class="close-btn" onclick="toggleAddForm()">❌</button>
   <input id="name" placeholder="اسم المشترك">
   <input id="phone" placeholder="رقم الهاتف">
   <input id="address" placeholder="العنوان">
@@ -80,21 +204,16 @@ th { background:#007bff; color:white; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
   authDomain: "pos2026-310b7.firebaseapp.com",
   databaseURL: "https://pos2026-310b7-default-rtdb.firebaseio.com",
-  projectId: "pos2026-310b7",
-  storageBucket: "pos2026-310b7.appspot.com",
-  messagingSenderId: "221592625111",
-  appId: "1:221592625111:web:81b9704a1fa790bcd0f592"
+  projectId: "pos2026-310b7"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* عناصر DOM */
+const addForm = document.getElementById("addForm");
 const nameInput = document.getElementById("name");
 const phoneInput = document.getElementById("phone");
 const addressInput = document.getElementById("address");
@@ -106,38 +225,43 @@ const filterStatus = document.getElementById("filterStatus");
 
 let subscribers = [];
 
-/* تحميل البيانات */
-onValue(ref(db,"subscribers"), snap => {
-  const data = snap.val() || {};
+window.toggleAddForm = ()=>{
+  addForm.classList.toggle("show");
+  if(addForm.classList.contains("show")) addForm.scrollIntoView({behavior:"smooth"});
+}
+
+onValue(ref(db,"subscribers"), snap=>{
+  const data = snap.val()||{};
   subscribers = Object.entries(data).map(([id,sub],i)=>({
     fid:id,
     id:i+1,
-    name: sub.name || "",
-    phone: sub.phone || "",
-    address: sub.address || "",
-    price: Number(sub.price||0),
-    payments: sub.payments || []
+    name: sub.name||"",
+    phone: sub.phone||"",
+    address: sub.address||"",
+    price:Number(sub.price||0),
+    payments: sub.payments||[]
   }));
   renderTable();
 });
 
-/* عرض الجدول */
-window.renderTable = function(){
+window.renderTable = ()=>{
   const s = search.value.toLowerCase();
   const f = filterStatus.value;
   tableBody.innerHTML="";
-  subscribers.filter(sub=>{
-    const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-    const rem = sub.price - paid;
-    let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
-    return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
-  }).forEach(sub=>{
-    const paid = (sub.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-    const rem = sub.price - paid;
+  const filtered = subscribers
+    .filter(sub=>{
+      const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
+      const rem = sub.price-paid;
+      let st="unpaid"; if(rem==0) st="full"; else if(rem<sub.price) st="partial";
+      return (f=="all"||f==st) && (sub.name.toLowerCase().includes(s)||sub.phone.includes(s));
+    })
+    .sort((a,b)=>a.id-b.id);
+  filtered.forEach(sub=>{
+    const paid = (sub.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
+    const rem = sub.price-paid;
     let txt="غير مدفوع",cls="status-unpaid";
     if(rem===0){txt="مدفوع كليًا";cls="status-full";}
     else if(rem<sub.price){txt="جزئي";cls="status-partial";}
-
     tableBody.innerHTML+=`
 <tr data-id="${sub.fid}">
 <td>${sub.id}</td>
@@ -150,29 +274,30 @@ window.renderTable = function(){
 <td class="${cls}">${txt}</td>
 <td>${rem>0?`<button class="reminder-btn" onclick="sendWA('${sub.fid}')">واتساب</button>`:"✔"}</td>
 <td>
-  <button class="edit-btn" onclick="startEdit(this)">تعديل</button>
-  <button class="delete-btn" onclick="del('${sub.fid}')">حذف</button>
+<button class="edit-btn" onclick="startEdit(this)">تعديل</button>
+<button class="delete-btn" onclick="del('${sub.fid}')">حذف</button>
 </td>
 </tr>`;
   });
 }
 
 /* إضافة مشترك */
-addBtn.onclick = () => {
-  if(!nameInput.value || !phoneInput.value || !priceInput.value) return alert("بيانات ناقصة");
+addBtn.onclick = ()=>{
+  if(!nameInput.value){ alert("الاسم مطلوب"); return; }
   push(ref(db,"subscribers"),{
-    name: nameInput.value,
-    phone: phoneInput.value,
-    address: addressInput.value,
-    price: Number(priceInput.value),
+    name:nameInput.value,
+    phone: phoneInput.value || "",
+    address: addressInput.value || "",
+    price: priceInput.value ? Number(priceInput.value) : 0,
     payments:[]
   });
-  nameInput.value = phoneInput.value = addressInput.value = priceInput.value = "";
+  nameInput.value=phoneInput.value=addressInput.value=priceInput.value="";
+  toggleAddForm();
 }
 
-/* تعديل المشترك */
-window.startEdit = (btn) => {
-  const row = btn.parentElement.parentElement;
+/* ===== التعديل ===== */
+window.startEdit = (btn)=>{
+  const row = btn.closest("tr");
   if(row.classList.contains("editing-row")) return;
   row.classList.add("editing-row");
   const fields = ["name","phone","address","price"];
@@ -183,7 +308,7 @@ window.startEdit = (btn) => {
     const input = document.createElement("input");
     input.value = cell.textContent;
     if(f==="price") input.type="number";
-    cell.textContent = "";
+    cell.textContent="";
     cell.appendChild(input);
   });
   row.querySelector("td:last-child").innerHTML = `
@@ -192,8 +317,8 @@ window.startEdit = (btn) => {
   `;
 }
 
-window.saveEdit = (btn) => {
-  const row = btn.parentElement.parentElement;
+window.saveEdit = (btn)=>{
+  const row = btn.closest("tr");
   const fid = row.dataset.id;
   const updateData = {};
   ["name","phone","address","price"].forEach(f=>{
@@ -206,8 +331,8 @@ window.saveEdit = (btn) => {
   });
 }
 
-window.cancelEdit = (btn,originalData) => {
-  const row = btn.parentElement.parentElement;
+window.cancelEdit = (btn,originalData)=>{
+  const row = btn.closest("tr");
   ["name","phone","address","price"].forEach(f=>{
     const cell = row.querySelector(`.field.${f}`);
     cell.textContent = originalData[f];
@@ -220,17 +345,17 @@ window.cancelEdit = (btn,originalData) => {
 }
 
 /* حذف */
-window.del = id => confirm("تأكيد الحذف؟") && remove(ref(db,"subscribers/"+id));
+window.del=id=>confirm("تأكيد الحذف؟")&&remove(ref(db,"subscribers/"+id));
 
 /* واتساب */
-window.sendWA = id => {
-  const s = subscribers.find(x => x.fid == id);
-  if(!s.phone.startsWith("+")) s.phone = "+961" + s.phone;
-  const paid = (s.payments || []).reduce((a,p)=>a+Number(p.amount||0),0);
-  const rem = s.price - paid;
+window.sendWA=id=>{
+  const s = subscribers.find(x=>x.fid==id);
+  if(!s.phone.startsWith("+")) s.phone = "+961"+s.phone;
+  const paid = (s.payments||[]).reduce((a,p)=>a+Number(p.amount||0),0);
+  const rem = s.price-paid;
   let msg = `السيد/ة ${s.name} المحترم/ة،\n`;
-  if(rem === 0){ alert(`${s.name} دفع كامل المبلغ بالفعل!`); return; }
-  else if(rem < s.price){
+  if(rem===0){ alert(`${s.name} دفع كامل المبلغ بالفعل!`); return; }
+  else if(rem< s.price){
     msg += `نذكركم بدفع إشتراك الأنترنت.\nقيمة الإشتراك: $${s.price}\nالمبلغ المدفوع جزئيًا: $${paid}\nالمتبقي: $${rem}\nيرجى دفع المبلغ المتبقي في أقرب وقت ممكن.`;
   } else {
     msg += `نذكركم بدفع إشتراك الأنترنت.\nقيمة الإشتراك: $${s.price}\nلم يتم دفع أي مبلغ بعد.\nيرجى دفع الاشتراك في أقرب وقت ممكن.`;
@@ -239,7 +364,7 @@ window.sendWA = id => {
 }
 
 /* استيراد Excel */
-document.getElementById('importFile').addEventListener('change', function(e){
+document.getElementById('importFile').addEventListener('change',function(e){
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -250,12 +375,11 @@ document.getElementById('importFile').addEventListener('change', function(e){
     const json = XLSX.utils.sheet_to_json(sheet);
     json.forEach(row=>{
       const name = row["الاسم"];
-      const phone = row["الهاتف"];
-      const address = row["العنوان"] || "";
-      const price = row["السعر"];
-      if(name && phone && price){
-        push(ref(db,"subscribers"),{ name, phone:phone.toString(), address, price:Number(price), payments:[] });
-      }
+      const phone = row["الهاتف"]||"";
+      const address = row["العنوان"]||"";
+      const price = row["السعر"] ? Number(row["السعر"]) : 0;
+      if(!name) return;
+      push(ref(db,"subscribers"),{name,phone,address,price,payments:[]});
     });
     alert("تم استيراد البيانات بنجاح!");
     e.target.value="";
@@ -264,15 +388,15 @@ document.getElementById('importFile').addEventListener('change', function(e){
 });
 
 /* تصدير Excel */
-window.exportToExcel = function() {
+window.exportToExcel = ()=>{
   const dbRef = ref(db,"subscribers");
-  onValue(dbRef, snap=>{
+  onValue(dbRef,snap=>{
     const dataFirebase = snap.val();
     if(!dataFirebase){alert("لا يوجد مشتركين للتصدير!"); return;}
     const list = Object.entries(dataFirebase).map(([id,sub],i)=>{
-      const payments = sub.payments || [];
+      const payments = sub.payments||[];
       const paid = payments.reduce((a,p)=>a+Number(p.amount||0),0);
-      const rem = sub.price - paid;
+      const rem = sub.price-paid;
       let status="غير مدفوع";
       if(rem===0) status="مدفوع كليًا"; else if(rem<sub.price) status="جزئي";
       return {"#":i+1,"الاسم":sub.name,"الهاتف":sub.phone,"العنوان":sub.address,"السعر":sub.price,"المدفوع":paid,"المتبقي":rem,"الحالة":status};
@@ -284,5 +408,6 @@ window.exportToExcel = function() {
   }, { onlyOnce:true });
 }
 </script>
+
 </body>
 </html>
