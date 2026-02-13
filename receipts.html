@@ -143,10 +143,11 @@ function renderTable() {
             <td><button class="print-btn">طباعة</button></td>
         `;
 
-        // تعديل زر الطباعة للطباعة عبر تطبيق Bluetooth
         tr.querySelector(".print-btn").addEventListener("click", ()=>{
             const receiptText = `
-FAST NET
+╔════════════════════════╗
+   FAST NET - 71-338640 / 71-346411
+╚════════════════════════╝
 رقم الإيصال: ${r.receiptNumber}
 المشترك: ${r.name}
 العنوان: ${r.address}
@@ -156,12 +157,12 @@ FAST NET
 الشهر: ${r.month}
 حالة الدفع: ${statusText}
 تاريخ الدفع: ${r.date}
+════════════════════════
 `;
 
-            // نسخ النص للإرسال إلى تطبيق Bluetooth Print
             navigator.clipboard.writeText(receiptText)
             .then(()=>{
-                alert("تم نسخ الإيصال!\nافتح تطبيق Bluetooth Print على الهاتف للصقه والطباعة.");
+                alert("تم نسخ الإيصال!\nافتح تطبيق Funny Print على الهاتف للصقه والطباعة.");
             })
             .catch(err=>{
                 alert("حدث خطأ أثناء نسخ الإيصال: "+err);
