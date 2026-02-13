@@ -153,22 +153,61 @@ function renderTable() {
             <html>
             <head>
             <style>
-                @page { size: 55mm auto; margin: 0; }
-                body {
-                    font-family: Arial;
-                    direction: rtl;
-                    width: 55mm;
-                    margin: 0;
-                    padding: 4mm;
-                    box-sizing: border-box;
-                    font-size: 12px;
-                }
-                table { width:100%; border-collapse:collapse; }
-                td { padding:3px 0; word-break: break-word; }
-                hr { border:none; border-top:1px dashed #000; margin:6px 0; }
-                h2 { text-align:center; margin:0; font-size:15px; }
-                .contact { text-align:center; font-size:11px; margin-bottom:5px; }
-            </style>
+    @page {
+        size: 57mm auto;
+        margin: 0;
+    }
+
+    html, body {
+        width: 57mm;
+        margin: 0;
+        padding: 0;
+        height: auto;
+    }
+
+    body {
+        font-family: Arial;
+        direction: rtl;
+        padding: 3mm;
+        box-sizing: border-box;
+        font-size: 12px;
+        display: inline-block;
+    }
+
+    .receipt {
+        width: 100%;
+        display: inline-block;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td {
+        padding: 2px 0;
+        word-break: break-word;
+    }
+
+    h2 {
+        text-align: center;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .contact {
+        text-align: center;
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px dashed #000;
+        margin: 5px 0;
+    }
+</style>
+
             </head>
             <body onload="window.print(); setTimeout(()=>window.close(),500);">
 
