@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الإيصالات - FAST NET</title>
+
 <style>
 body { font-family: Arial; background: #f5f5f5; direction: rtl; margin:0; padding:20px;}
 .container { max-width:1000px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
@@ -23,6 +24,7 @@ th { background:#007bff; color:#fff;}
 .back-btn:hover { background:#0056b3;}
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -62,7 +64,7 @@ import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10
 
 /* Firebase Config */
 const firebaseConfig = {
-  apiKey: "AIzaSyAolIz4UgOSbV1oe0XTl8a8pVfg7Pnfs1w",
+  apiKey: "YOUR_API_KEY",
   authDomain: "pos2026-310b7.firebaseapp.com",
   databaseURL: "https://pos2026-310b7-default-rtdb.firebaseio.com",
   projectId: "pos2026-310b7",
@@ -80,7 +82,6 @@ const filterSelect = document.getElementById("filterStatus");
 
 let receipts = [];
 
-// تحميل المشتركين وإنشاء الإيصالات
 onValue(ref(db, "subscribers"), snap => {
     const data = snap.val() || {};
     receipts = [];
@@ -145,13 +146,40 @@ function renderTable() {
         `;
 
         tr.querySelector(".print-btn").addEventListener("click", ()=>{
-            const win = window.open("", "PrintReceipt", "width=220,height=500");
+
+            const win = window.open("", "PrintReceipt", "width=400,height=600");
+
             win.document.write(`
-            <div style="font-family:Arial;direction:rtl;width:200px;padding:5px;text-align:right;font-size:12px;">
-                <h3 style="text-align:center;margin:0;">FAST NET</h3>
-                <p style="text-align:center; margin:2px 0; font-size:12px;">71-338640   📞  71-346411</p>
+            <html>
+            <head>
+            <style>
+                @page { size: 57mm auto; margin: 0; }
+                body {
+                    font-family: Arial;
+                    direction: rtl;
+                    width: 57mm;
+                    margin: 0;
+                    padding: 4mm;
+                    box-sizing: border-box;
+                    font-size: 12px;
+                }
+                table { width:100%; border-collapse:collapse; }
+                td { padding:3px 0; word-break: break-word; }
+                hr { border:none; border-top:1px dashed #000; margin:6px 0; }
+                h2 { text-align:center; margin:0; font-size:15px; }
+                .contact { text-align:center; font-size:11px; margin-bottom:5px; }
+            </style>
+            </head>
+            <body onload="window.print(); setTimeout(()=>window.close(),500);">
+
+                <h2>FAST NET</h2>
+                <div class="contact">
+                    71-338640 📞 71-346411
+                </div>
+
                 <hr>
-                <table style="width:100%;border-collapse:collapse;font-size:12px;direction:rtl;">
+
+                <table>
                     <tr><td>رقم الإيصال:</td><td>${r.receiptNumber}</td></tr>
                     <tr><td>المشترك:</td><td>${r.name}</td></tr>
                     <tr><td>العنوان:</td><td>${r.address}</td></tr>
@@ -162,10 +190,14 @@ function renderTable() {
                     <tr><td>حالة الدفع:</td><td>${statusText}</td></tr>
                     <tr><td>تاريخ الدفع:</td><td>${r.date}</td></tr>
                 </table>
+
                 <hr>
-            </div>
+
+            </body>
+            </html>
             `);
-            win.print();
+
+            win.document.close();
         });
 
         tableBody.appendChild(tr);
@@ -175,5 +207,6 @@ function renderTable() {
 searchInput.addEventListener("input", renderTable);
 filterSelect.addEventListener("change", renderTable);
 </script>
+
 </body>
 </html>
