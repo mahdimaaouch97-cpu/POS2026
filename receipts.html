@@ -145,21 +145,22 @@ function renderTable() {
 
         tr.querySelector(".print-btn").addEventListener("click", ()=>{
             const receiptText = `
-╔════════════════════════╗
-   FAST NET - 71-338640 / 71-346411
-╚════════════════════════╝
-رقم الإيصال: ${r.receiptNumber}
-المشترك: ${r.name}
-العنوان: ${r.address}
-سعر الاشتراك: $${r.total}
-المدفوع: $${r.amount}
-المتبقي: $${r.remaining}
-الشهر: ${r.month}
-حالة الدفع: ${statusText}
-تاريخ الدفع: ${r.date}
-════════════════════════
-`;
+              ╔════════════════════╗
+          FAST NET - 71-338640 / 71-346411
+              ╚════════════════════╝
 
+              *** رقم الإيصال: ${r.receiptNumber} ***
+              *** المشترك: ${r.name} ***
+              *** العنوان: ${r.address} ***
+              *** سعر الاشتراك: $${r.total} ***
+              *** المدفوع: $${r.amount} ***
+              *** المتبقي: $${r.remaining} ***
+              *** الشهر: ${r.month} ***
+              *** حالة الدفع: ${statusText} ***
+              *** تاريخ الدفع: ${r.date} ***
+
+              ═════════════════════
+`;
             navigator.clipboard.writeText(receiptText)
             .then(()=>{
                 alert("تم نسخ الإيصال!\nافتح تطبيق Funny Print على الهاتف للصقه والطباعة.");
