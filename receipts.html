@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الإيصالات - FAST NET</title>
+
 <style>
 body { font-family: Arial; background: #f5f5f5; direction: rtl; margin:0; padding:20px;}
 .container { max-width:1000px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
@@ -23,6 +24,7 @@ th { background:#007bff; color:#fff;}
 .back-btn:hover { background:#0056b3;}
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -86,10 +88,14 @@ onValue(ref(db, "subscribers"), snap => {
 
     Object.values(data).forEach(sub => {
         if(!sub.payments) return;
+
         sub.payments.forEach(p => {
-            const totalPaid = sub.payments.slice(0, sub.payments.indexOf(p)+1)
-                                 .reduce((a,b)=>a+b.amount,0);
+            const totalPaid = sub.payments
+                .slice(0, sub.payments.indexOf(p)+1)
+                .reduce((a,b)=>a+b.amount,0);
+
             const remaining = +(sub.price - totalPaid).toFixed(2);
+
             receipts.push({
                 receiptNumber: p.receiptNumber || '-',
                 name: sub.name || "بدون اسم",
@@ -125,10 +131,9 @@ function renderTable() {
     }
 
     filtered.forEach(r=>{
-        let statusClass = "status-none";
         let statusText = "غير مدفوع";
-        if(r.remaining===0){statusClass="status-full"; statusText="مدفوع كليًا";}
-        else if(r.remaining>0 && r.remaining<r.total){statusClass="status-partial"; statusText="مدفوع جزئيًا";}
+        if(r.remaining===0) statusText="مدفوع كليًا";
+        else if(r.remaining>0 && r.remaining<r.total) statusText="مدفوع جزئيًا";
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -138,36 +143,47 @@ function renderTable() {
             <td>$${r.amount}</td>
             <td>$${r.remaining}</td>
             <td>${r.month}</td>
-            <td><span class="status-label ${statusClass}">${statusText}</span></td>
+            <td>${statusText}</td>
             <td>${r.date}</td>
             <td><button class="print-btn">طباعة</button></td>
         `;
 
         tr.querySelector(".print-btn").addEventListener("click", ()=>{
-            const receiptText = `
-              ╔════════════════════╗
-          FAST NET - 71-338640 / 71-346411
-              ╚════════════════════╝
 
-              *** رقم الإيصال: ${r.receiptNumber} ***
-              *** المشترك: ${r.name} ***
-              *** العنوان: ${r.address} ***
-              *** سعر الاشتراك: $${r.total} ***
-              *** المدفوع: $${r.amount} ***
-              *** المتبقي: $${r.remaining} ***
-              *** الشهر: ${r.month} ***
-              *** حالة الدفع: ${statusText} ***
-              *** تاريخ الدفع: ${r.date} ***
+const receiptText = `
+================================
+            FAST NET
+       71-338640 | 71-346411
+================================
 
-              ═════════════════════
+رقم الإيصال : ${r.receiptNumber}
+
+المشترك     : ${r.name}
+العنوان     : ${r.address}
+
+--------------------------------
+سعر الاشتراك : $${r.total}
+المدفوع      : $${r.amount}
+المتبقي      : $${r.remaining}
+--------------------------------
+
+الشهر        : ${r.month}
+حالة الدفع   : ${statusText}
+تاريخ الدفع  : ${r.date}
+
+================================
+        شكراً لثقتكم بنا
+================================
 `;
+
             navigator.clipboard.writeText(receiptText)
             .then(()=>{
-                alert("تم نسخ الإيصال!\nافتح تطبيق Funny Print على الهاتف للصقه والطباعة.");
+                alert("تم نسخ الإيصال ✅\nافتح Funny Print والصق النص ثم اطبع.");
             })
-            .catch(err=>{
-                alert("حدث خطأ أثناء نسخ الإيصال: "+err);
+            .catch(()=>{
+                alert("حدث خطأ أثناء النسخ ❌");
             });
+
         });
 
         tableBody.appendChild(tr);
@@ -176,6 +192,7 @@ function renderTable() {
 
 searchInput.addEventListener("input", renderTable);
 filterSelect.addEventListener("change", renderTable);
+
 </script>
 
 </body>
